@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('nis')->unique();
             $table->string('name');
-            $table->string('email')->unique();
+            $table->string('email')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('role')->default('siswa'); // 'siswa', 'guru'
+            $table->string('kelas')->default('XII RPL 1');
+            $table->string('worship_type')->default('muslim'); // 'muslim', 'non_muslim'
             $table->rememberToken();
             $table->timestamps();
         });
