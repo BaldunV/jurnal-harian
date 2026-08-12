@@ -12,9 +12,7 @@ class AuthController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return Auth::user()->role === 'guru' 
-                ? redirect()->route('teacher.index') 
-                : redirect()->route('dashboard');
+            return $this->redirectByRole(Auth::user());
         }
         return view('auth.login');
     }
@@ -24,6 +22,7 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'nis' => ['required', 'string'],
             'password' => ['required', 'string'],
+            'login_as' => ['required', 'in:siswa,staff'],
         ], [
             'nis.required' => 'NIS / Username wajib diisi.',
             'password.required' => 'Password wajib diisi.',
@@ -33,11 +32,16 @@ class AuthController extends Controller
             $request->session()->regenerate();
             $user = Auth::user();
 
-            if ($user->role === 'guru') {
-                return redirect()->route('teacher.index')->with('success', 'Selamat datang kembali, Bapak/Ibu Guru!');
+            $validPortal = $credentials['login_as'] === 'siswa'
+                ? $user->role === 'siswa'
+                : in_array($user->role, ['admin', 'guru'], true);
+
+            if (!$validPortal) {
+                Auth::logout();
+                return back()->withErrors(['nis' => 'Silakan gunakan portal login yang sesuai dengan peran akun Anda.'])->onlyInput('nis');
             }
 
-            return redirect()->route('dashboard')->with('success', 'Login berhasil! Selamat mencatat 7 Kebiasaan Baik hari ini.');
+            return $this->redirectByRole($user)->with('success', 'Login berhasil. Selamat datang kembali!');
         }
 
         return back()->withErrors([
@@ -58,8 +62,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'nis' => ['required', 'string', 'unique:users,nis', 'max:50'],
             'name' => ['required', 'string', 'max:255'],
-            'kelas' => ['required', 'string', 'max:50'],
-            'role' => ['required', 'in:siswa,guru'],
+            'kelas' => ['required', 'in:X PPLG,X TJKT,X AKL,X ACP,XI PPLG,XI TJKT,XI AKL,XI ACP,XII PPLG,XII TJKT,XII AKL,XII ACP'],
             'worship_type' => ['required', 'in:muslim,non_muslim'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
         ], [
@@ -75,16 +78,12 @@ class AuthController extends Controller
             'nis' => $validated['nis'],
             'name' => $validated['name'],
             'kelas' => $validated['kelas'],
-            'role' => $validated['role'],
+            'role' => 'siswa',
             'worship_type' => $validated['worship_type'],
             'password' => Hash::make($validated['password']),
         ]);
 
         Auth::login($user);
-
-        if ($user->role === 'guru') {
-            return redirect()->route('teacher.index')->with('success', 'Akun Guru berhasil dibuat!');
-        }
 
         return redirect()->route('dashboard')->with('success', 'Pendaftaran berhasil! Mari bangun 7 Kebiasaan Baik.');
     }
@@ -96,5 +95,14 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login')->with('success', 'Anda telah keluar dari aplikasi.');
+    }
+
+    private function redirectByRole(User $user)
+    {
+        return match ($user->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'guru' => redirect()->route('teacher.index'),
+            default => redirect()->route('dashboard'),
+        };
     }
 }

@@ -12,7 +12,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Akun Guru Demo
+        // 1. Akun Admin Demo
+        $this->call(AdminUserSeeder::class);
+
+        // 2. Akun Guru Demo
         $guru = User::create([
             'nis' => 'GURU001',
             'name' => 'Bapak Ahmad, S.Pd.',
@@ -23,7 +26,7 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('password123'),
         ]);
 
-        // 2. Akun Siswa Demo 1
+        // 3. Akun Siswa Demo 1
         $siswa1 = User::create([
             'nis' => '12345678',
             'name' => 'Budi Santoso',

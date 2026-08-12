@@ -13,10 +13,6 @@ class JournalController extends Controller
     public function dashboard(Request $request)
     {
         $user = Auth::user();
-        if ($user->role === 'guru') {
-            return redirect()->route('teacher.index');
-        }
-
         $today = Carbon::today();
         $todayStr = $today->toDateString();
 
@@ -56,6 +52,9 @@ class JournalController extends Controller
     public function save(Request $request)
     {
         $user = Auth::user();
+        $request->validate([
+            'bangun_pagi_time' => ['nullable', 'date_format:H:i'],
+        ]);
         $targetDateStr = Carbon::parse($request->input('date', Carbon::today()->toDateString()))->toDateString();
 
         $journal = Journal::where('user_id', $user->id)
@@ -81,6 +80,7 @@ class JournalController extends Controller
         }
 
         $journal->bangun_pagi = $request->boolean('bangun_pagi');
+        $journal->bangun_pagi_time = $journal->bangun_pagi ? $request->input('bangun_pagi_time') : null;
         $journal->berolahraga = $request->boolean('berolahraga');
         $journal->olahraga_note = $request->input('olahraga_note');
         $journal->makan_sehat = $request->boolean('makan_sehat');

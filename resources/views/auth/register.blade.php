@@ -4,7 +4,7 @@
 
 @section('content')
 <h2 class="text-xl font-bold text-slate-800 mb-1">Registrasi Akun</h2>
-<p class="text-xs text-slate-500 mb-6">Isi formulir untuk mulai mencatat jurnal harian Anda.</p>
+<p class="text-xs text-slate-500 mb-6">Pendaftaran mandiri hanya untuk siswa. Akun admin dan guru dibuat oleh sekolah.</p>
 
 <form action="{{ route('register') }}" method="POST" class="space-y-4">
     @csrf
@@ -33,20 +33,23 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-3">
-        <div>
-            <label for="kelas" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kelas</label>
-            <input type="text" id="kelas" name="kelas" value="{{ old('kelas', 'XII RPL 1') }}" required
-                placeholder="e.g. XII RPL 1"
-                class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
-        </div>
-        <div>
-            <label for="role" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Peran Akun</label>
-            <select id="role" name="role" class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
-                <option value="siswa" {{ old('role') == 'siswa' ? 'selected' : '' }}>Siswa</option>
-                <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>Guru / Wali Kelas</option>
-            </select>
-        </div>
+    <div>
+        <label for="kelas" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Kelas</label>
+        <select id="kelas" name="kelas" required class="w-full px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+            <option value="" disabled {{ old('kelas') ? '' : 'selected' }}>Pilih kelas dan jurusan</option>
+            @foreach ([
+                'Kelas X' => ['X PPLG', 'X TJKT', 'X AKL', 'X ACP'],
+                'Kelas XI' => ['XI PPLG', 'XI TJKT', 'XI AKL', 'XI ACP'],
+                'Kelas XII' => ['XII PPLG', 'XII TJKT', 'XII AKL', 'XII ACP'],
+            ] as $tingkat => $kelasList)
+                <optgroup label="{{ $tingkat }}">
+                    @foreach ($kelasList as $kelas)
+                        <option value="{{ $kelas }}" @selected(old('kelas') === $kelas)>{{ $kelas }}</option>
+                    @endforeach
+                </optgroup>
+            @endforeach
+        </select>
+        @error('kelas')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
     </div>
 
     <div>

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
     <title>@yield('title', '7 Kebiasaan Baik - Jurnal Siswa')</title>
     
     <!-- Google Fonts: Plus Jakarta Sans -->
@@ -44,8 +45,8 @@
     <div class="w-full max-w-md">
         <!-- Logo Header -->
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white shadow-lg shadow-emerald-500/30 mb-3">
-                <i class="fa-solid fa-heart-pulse text-3xl"></i>
+            <div class="inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-xl shadow-slate-200/80 p-2 mb-3 border border-slate-100/80">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Jurnal 7 Kebiasaan" class="w-full h-full object-contain">
             </div>
             <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Jurnal 7 Kebiasaan Baik</h1>
             <p class="text-sm font-medium text-slate-500 mt-1">Sistem Self-Tracking Siswa Sekolah / SMK</p>

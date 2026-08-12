@@ -13,6 +13,7 @@ class Journal extends Model
         'user_id',
         'date',
         'bangun_pagi',
+        'bangun_pagi_time',
         'beribadah',
         'ibadah_details',
         'berolahraga',

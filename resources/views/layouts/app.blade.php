@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
     <title>@yield('title', 'Dashboard Jurnal 7 Kebiasaan Baik')</title>
     
     <!-- Google Fonts: Plus Jakarta Sans -->
@@ -50,23 +51,44 @@
                 padding-bottom: 0;
             }
         }
+
+        /* Checkbox pop & bounce animation */
+        @keyframes checkPop {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.38) rotate(-6deg); }
+            70% { transform: scale(0.92) rotate(2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes cardCheckPulse {
+            0% { border-color: rgba(16, 185, 129, 0.8); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+            100% { border-color: rgba(226, 232, 240, 0.8); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        }
+
+        .animate-check-pop {
+            animation: checkPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .card-check-highlight {
+            animation: cardCheckPulse 0.7s ease-out forwards;
+        }
     </style>
 </head>
 <body class="bg-slate-50 font-sans text-slate-800 min-h-screen">
 
     <!-- Top Navigation Header -->
     <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="w-full px-4 sm:px-6 lg:px-10">
             <div class="flex items-center justify-between h-16">
                 
                 <!-- Logo & Brand -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
-                        <i class="fa-solid fa-heart-pulse text-lg"></i>
+                    <div class="w-11 h-11 rounded-xl bg-white p-0.5 shadow-md shadow-emerald-500/10 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                        <img src="{{ asset('images/logo.png') }}" alt="Logo Jurnal 7 Kebiasaan" class="w-full h-full object-contain">
                     </div>
                     <div>
-                        <span class="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg block leading-tight">Jurnal 7 Kebiasaan</span>
-                        <span class="text-[10px] font-semibold text-emerald-600 tracking-wider uppercase">Sistem Self-Tracking Siswa</span>
+                        <span class="font-extrabold text-slate-900 tracking-tight text-base sm:text-lg block leading-tight">SMK BPPI</span>
+                        <span class="text-[10px] font-semibold text-emerald-600 tracking-wider uppercase">Jurnal 7 Kebiasaan</span>
                     </div>
                 </div>
 
@@ -77,7 +99,9 @@
                         <span class="text-[11px] text-slate-500 font-medium">NIS: {{ Auth::user()->nis }} &bull; {{ Auth::user()->kelas }}</span>
                     </div>
 
-                    @if(Auth::user()->role === 'guru')
+                    @if(Auth::user()->role === 'admin')
+                        <span class="px-2.5 py-1 bg-violet-100 text-violet-800 rounded-full text-xs font-extrabold">Admin</span>
+                    @elseif(Auth::user()->role === 'guru')
                         <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-full text-xs font-extrabold">Guru/Wali Kelas</span>
                     @endif
 
@@ -94,11 +118,11 @@
     </header>
 
     <!-- Main Content Layout -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="w-full px-4 sm:px-6 lg:px-10 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- Desktop Sidebar Navigation -->
-            <aside class="hidden lg:block lg:col-span-3">
+            <aside class="hidden lg:block lg:col-span-3 xl:col-span-2">
                 <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 sticky top-24 space-y-1">
                     <div class="px-3 py-2 text-xs font-extrabold text-slate-400 uppercase tracking-wider mb-1">Menu Utama</div>
 
@@ -117,6 +141,19 @@
                             <i class="fa-solid fa-chart-pie text-base"></i>
                             <span>Statistik Kebiasaan</span>
                         </a>
+                    @elseif(Auth::user()->role === 'admin')
+                        <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('admin.dashboard') && request('view') !== 'registered' ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-600 hover:bg-slate-50' }}">
+                            <i class="fa-solid fa-chart-column text-base"></i>
+                            <span>Rekap Semua Siswa</span>
+                        </a>
+                        <a href="{{ route('teacher.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('teacher.index') ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-600 hover:bg-slate-50' }}">
+                            <i class="fa-solid fa-users text-base"></i>
+                            <span>Data Siswa</span>
+                        </a>
+                        <a href="{{ route('admin.dashboard', ['view' => 'registered']) }}#daftar-siswa-terdaftar" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all {{ request('view') === 'registered' ? 'bg-violet-600 text-white shadow-md shadow-violet-500/20' : 'text-slate-600 hover:bg-slate-50' }}">
+                            <i class="fa-solid fa-user-check text-base"></i>
+                            <span>Siswa Terdaftar</span>
+                        </a>
                     @else
                         <a href="{{ route('teacher.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('teacher.index') ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-slate-600 hover:bg-slate-50' }}">
                             <i class="fa-solid fa-users text-base"></i>
@@ -124,26 +161,23 @@
                         </a>
                     @endif
 
-                    <a href="{{ route('profile') }}" class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all {{ request()->routeIs('profile') ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/20' : 'text-slate-600 hover:bg-slate-50' }}">
-                        <i class="fa-solid fa-user-gear text-base"></i>
-                        <span>Profil & Pengaturan</span>
-                    </a>
-
-                    <!-- User Summary Box in Sidebar -->
-                    <div class="pt-4 border-t border-slate-100 mt-4 px-2">
-                        <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1">
-                            <div class="font-bold text-slate-700 flex items-center justify-between">
-                                <span>Status Akun:</span>
-                                <span class="text-emerald-600 font-extrabold">Aktif</span>
+                    @if(Auth::user()->role === 'admin')
+                        <!-- Ringkasan akun hanya untuk admin -->
+                        <div class="pt-4 border-t border-slate-100 mt-4 px-2">
+                            <div class="p-3 bg-slate-50 rounded-xl text-xs space-y-1">
+                                <div class="font-bold text-slate-700 flex items-center justify-between">
+                                    <span>Status Akun:</span>
+                                    <span class="text-emerald-600 font-extrabold">Aktif</span>
+                                </div>
+                                <div class="text-slate-500">Peran: <span class="font-semibold text-slate-700 uppercase">Admin</span></div>
                             </div>
-                            <div class="text-slate-500">Agama/Ibadah: <span class="font-semibold text-slate-700 uppercase">{{ Auth::user()->worship_type }}</span></div>
                         </div>
-                    </div>
+                    @endif
                 </div>
             </aside>
 
             <!-- Main Content Area -->
-            <main class="col-span-1 lg:col-span-9 space-y-6">
+            <main class="col-span-1 lg:col-span-9 xl:col-span-10 space-y-6">
                 <!-- Toast Notification Container -->
                 @if(session('success'))
                     <div id="toast-success" class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center justify-between shadow-sm animate-fade-in">
@@ -181,6 +215,19 @@
                     <i class="fa-solid fa-chart-pie text-lg"></i>
                     <span class="text-[11px] mt-0.5">Statistik</span>
                 </a>
+            @elseif(Auth::user()->role === 'admin')
+                <a href="{{ route('admin.dashboard') }}" class="flex flex-col items-center py-1 px-3 rounded-xl transition-all {{ request()->routeIs('admin.dashboard') && request('view') !== 'registered' ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                    <i class="fa-solid fa-chart-column text-lg"></i>
+                    <span class="text-[11px] mt-0.5">Rekap</span>
+                </a>
+                <a href="{{ route('teacher.index') }}" class="flex flex-col items-center py-1 px-3 rounded-xl transition-all {{ request()->routeIs('teacher.index') ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                    <i class="fa-solid fa-users text-lg"></i>
+                    <span class="text-[11px] mt-0.5">Siswa</span>
+                </a>
+                <a href="{{ route('admin.dashboard', ['view' => 'registered']) }}#daftar-siswa-terdaftar" class="flex flex-col items-center py-1 px-3 rounded-xl transition-all {{ request('view') === 'registered' ? 'text-violet-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
+                    <i class="fa-solid fa-user-check text-lg"></i>
+                    <span class="text-[11px] mt-0.5">Terdaftar</span>
+                </a>
             @else
                 <a href="{{ route('teacher.index') }}" class="flex flex-col items-center py-1 px-3 rounded-xl transition-all {{ request()->routeIs('teacher.index') ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
                     <i class="fa-solid fa-users text-lg"></i>
@@ -188,10 +235,6 @@
                 </a>
             @endif
 
-            <a href="{{ route('profile') }}" class="flex flex-col items-center py-1 px-3 rounded-xl transition-all {{ request()->routeIs('profile') ? 'text-emerald-600 font-bold' : 'text-slate-400 hover:text-slate-600' }}">
-                <i class="fa-solid fa-user-gear text-lg"></i>
-                <span class="text-[11px] mt-0.5">Profil</span>
-            </a>
         </div>
     </nav>
 
