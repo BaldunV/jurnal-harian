@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,7 +48,7 @@ class Journal extends Model
 
     public function setDateAttribute($value)
     {
-        $this->attributes['date'] = \Carbon\Carbon::parse($value)->toDateString();
+        $this->attributes['date'] = Carbon::parse($value)->toDateString();
     }
 
     public function user()
@@ -56,23 +57,57 @@ class Journal extends Model
     }
 
     /**
+     * Jam bangun dianggap sesuai jika berada di rentang 03:00 - 10:00
+     */
+    public function isBangunPagiTimeValid(): bool
+    {
+        $time = $this->bangun_pagi_time;
+        if (! $time) {
+            return false;
+        }
+
+        return $time >= '03:00' && $time <= '10:00';
+    }
+
+    /**
+     * Jam tidur dianggap sesuai jika berada di rentang 20:00 - 23:59
+     */
+    public function isTidurCepatTimeValid(): bool
+    {
+        $note = $this->tidur_note;
+        if (! $note) {
+            return false;
+        }
+
+        if (! preg_match('/^(\d{2}):(\d{2})/', $note, $matches)) {
+            return false;
+        }
+
+        $time = $matches[1].':'.$matches[2];
+
+        return $time >= '20:00' && $time <= '23:59';
+    }
+
+    /**
      * Re-calculate completed_count and is_fully_completed before saving
      */
     public function recalculateProgress()
     {
         $habits = [
-            $this->bangun_pagi,
+            $this->bangun_pagi && $this->isBangunPagiTimeValid(),
             $this->beribadah,
             $this->berolahraga,
             $this->makan_sehat,
             $this->gemar_belajar,
             $this->bermasyarakat,
-            $this->tidur_cepat,
+            $this->tidur_cepat && $this->isTidurCepatTimeValid(),
         ];
 
         $completed = 0;
         foreach ($habits as $h) {
-            if ($h) $completed++;
+            if ($h) {
+                $completed++;
+            }
         }
 
         $this->completed_count = $completed;

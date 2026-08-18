@@ -1,22 +1,35 @@
 import { defineConfig } from 'vite';
+import os from 'os';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
+import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+
+const lanIp = Object.values(os.networkInterfaces())
+    .flat()
+    .find((i) => i.family === 'IPv4' && !i.internal)?.address;
 
 export default defineConfig({
     plugins: [
+        react(),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
+            input: [
+                'resources/css/app.css',
+                'resources/js/app.js',
+                'resources/js/apps/dashboard-react.jsx',
+                'resources/js/apps/statistics-react.jsx',
+                'resources/js/apps/login-react.tsx',
             ],
-        }),
+            refresh: true,
+        }), 
         tailwindcss(),
     ],
+
     server: {
+        host: lanIp ?? '127.0.0.1',
+        port: 5173,
+
+        
+
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

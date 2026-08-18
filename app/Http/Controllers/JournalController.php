@@ -3,10 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Journal;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon;
 
 class JournalController extends Controller
 {
@@ -20,13 +21,13 @@ class JournalController extends Controller
             ->whereDate('date', $todayStr)
             ->first();
 
-        if (!$journal) {
+        if (! $journal) {
             $journal = Journal::create([
                 'user_id' => $user->id,
                 'date' => $todayStr,
                 'bangun_pagi' => false,
                 'beribadah' => false,
-                'ibadah_details' => $user->worship_type === 'muslim' 
+                'ibadah_details' => $user->worship_type === 'muslim'
                     ? ['subuh' => false, 'dzuhur' => false, 'ashar' => false, 'maghrib' => false, 'isya' => false]
                     : ['doa_pagi' => false, 'kitab_meditasi' => false, 'doa_malam' => false],
                 'berolahraga' => false,
@@ -46,7 +47,14 @@ class JournalController extends Controller
             ->take(7)
             ->get();
 
-        return view('dashboard', compact('user', 'journal', 'today', 'streak', 'badges', 'recentJournals'));
+        $leaderboard = User::where('role', 'siswa')
+            ->where('kelas', $user->kelas)
+            ->withSum('journals as total_habits', 'completed_count')
+            ->orderByDesc('total_habits')
+            ->orderBy('name')
+            ->get();
+
+        return view('dashboard', compact('user', 'journal', 'today', 'streak', 'badges', 'recentJournals', 'leaderboard'));
     }
 
     public function save(Request $request)
@@ -70,11 +78,12 @@ class JournalController extends Controller
                     'message' => 'Jurnal telah disimpan permanen dan tidak dapat diubah kembali selamanya.',
                 ], 422);
             }
+
             return redirect()->back()->withErrors(['message' => 'Jurnal telah disimpan permanen dan tidak dapat diubah kembali selamanya.']);
         }
 
-        if (!$journal) {
-            $journal = new Journal();
+        if (! $journal) {
+            $journal = new Journal;
             $journal->user_id = $user->id;
             $journal->date = $targetDateStr;
         }
@@ -127,7 +136,7 @@ class JournalController extends Controller
         $journal->recalculateProgress();
 
         // Jika ini submit manual (bukan AJAX auto-save), kunci permanen
-        $isManualSubmit = !($request->wantsJson() || $request->ajax());
+        $isManualSubmit = ! ($request->wantsJson() || $request->ajax());
         if ($isManualSubmit) {
             $journal->is_submitted = true;
         }
@@ -146,7 +155,7 @@ class JournalController extends Controller
             ]);
         }
 
-        return redirect()->route('dashboard')->with('success', '✅ Jurnal harian berhasil disimpan dan dikunci permanen!');
+        return redirect()->route('dashboard')->with('success', 'Jurnal harian berhasil disimpan dan dikunci permanen!');
     }
 
     public function history(Request $request)
@@ -175,7 +184,7 @@ class JournalController extends Controller
             ->whereDate('date', $date)
             ->first();
 
-        if (!$journal) {
+        if (! $journal) {
             return response()->json([
                 'found' => false,
                 'date' => $date,
@@ -205,13 +214,13 @@ class JournalController extends Controller
         }
 
         $stats = [
-            'bangun_pagi' => ['name' => 'Bangun Pagi', 'icon' => '🌅', 'count' => $journals->where('bangun_pagi', true)->count()],
-            'beribadah' => ['name' => 'Beribadah', 'icon' => '🤲', 'count' => $journals->where('beribadah', true)->count()],
-            'berolahraga' => ['name' => 'Berolahraga', 'icon' => '🏃‍♂️', 'count' => $journals->where('berolahraga', true)->count()],
-            'makan_sehat' => ['name' => 'Makan Sehat', 'icon' => '🥗', 'count' => $journals->where('makan_sehat', true)->count()],
-            'gemar_belajar' => ['name' => 'Gemar Belajar', 'icon' => '📚', 'count' => $journals->where('gemar_belajar', true)->count()],
-            'bermasyarakat' => ['name' => 'Bermasyarakat', 'icon' => '🤝', 'count' => $journals->where('bermasyarakat', true)->count()],
-            'tidur_cepat' => ['name' => 'Tidur Cepat', 'icon' => '🌙', 'count' => $journals->where('tidur_cepat', true)->count()],
+            'bangun_pagi' => ['name' => 'Bangun Pagi', 'icon' => 'sunrise', 'count' => $journals->where('bangun_pagi', true)->count()],
+            'beribadah' => ['name' => 'Beribadah', 'icon' => 'hand-heart', 'count' => $journals->where('beribadah', true)->count()],
+            'berolahraga' => ['name' => 'Berolahraga', 'icon' => 'footprints', 'count' => $journals->where('berolahraga', true)->count()],
+            'makan_sehat' => ['name' => 'Makan Sehat', 'icon' => 'salad', 'count' => $journals->where('makan_sehat', true)->count()],
+            'gemar_belajar' => ['name' => 'Gemar Belajar', 'icon' => 'book-open', 'count' => $journals->where('gemar_belajar', true)->count()],
+            'bermasyarakat' => ['name' => 'Bermasyarakat', 'icon' => 'handshake', 'count' => $journals->where('bermasyarakat', true)->count()],
+            'tidur_cepat' => ['name' => 'Tidur Cepat', 'icon' => 'moon-star', 'count' => $journals->where('tidur_cepat', true)->count()],
         ];
 
         foreach ($stats as $key => &$item) {
@@ -219,17 +228,51 @@ class JournalController extends Controller
         }
         unset($item);
 
+        $shortNames = [
+            'bangun_pagi' => 'Pagi',
+            'beribadah' => 'Ibadah',
+            'berolahraga' => 'Olahraga',
+            'makan_sehat' => 'Sehat',
+            'gemar_belajar' => 'Belajar',
+            'bermasyarakat' => 'Sosial',
+            'tidur_cepat' => 'Tidur',
+        ];
+
+        foreach ($stats as $key => &$item) {
+            $item['shortName'] = $shortNames[$key] ?? $item['name'];
+        }
+        unset($item);
+
+        $journalsByDate = $journals->keyBy(fn ($journal) => Carbon::parse($journal->date)->toDateString());
+        $trendData = collect(range(0, $days - 1))->map(function ($offset) use ($startDate, $journalsByDate) {
+            $date = $startDate->copy()->addDays($offset);
+            $journal = $journalsByDate->get($date->toDateString());
+
+            return [
+                'date' => $date->translatedFormat('d M'),
+                'completed' => $journal ? (int) $journal->completed_count : 0,
+            ];
+        })->values();
+
         // Find most skipped habit
         $sortedStats = collect($stats)->sortBy('count');
         $mostSkipped = $sortedStats->first();
 
-        return view('statistics', compact('user', 'stats', 'days', 'totalDaysRecorded', 'mostSkipped'));
+        return view('statistics', compact('user', 'stats', 'days', 'totalDaysRecorded', 'mostSkipped', 'trendData'));
     }
 
     public function profile()
     {
         $user = Auth::user();
+
         return view('profile', compact('user'));
+    }
+
+    public function mascot()
+    {
+        $user = Auth::user();
+
+        return view('mascot', compact('user'));
     }
 
     public function updateProfile(Request $request)
@@ -237,8 +280,6 @@ class JournalController extends Controller
         $user = Auth::user();
 
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'kelas' => ['required', 'string', 'max:50'],
             'worship_type' => ['required', 'in:muslim,non_muslim'],
         ]);
 
@@ -260,12 +301,12 @@ class JournalController extends Controller
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
 
-        if (!Hash::check($validated['current_password'], $user->password)) {
+        if (! Hash::check($validated['current_password'], $user->password)) {
             return redirect()->back()->withErrors(['current_password' => 'Password saat ini salah.']);
         }
 
         $user->update([
-            'password' => Hash::make($validated['password'])
+            'password' => Hash::make($validated['password']),
         ]);
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');

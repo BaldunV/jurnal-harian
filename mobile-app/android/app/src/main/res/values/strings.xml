@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Jurnal 7 Kebiasaan</string>
-    <string name="title_activity_main">Jurnal 7 Kebiasaan</string>
-    <string name="package_name">com.smkbppi.jurnal</string>
-    <string name="custom_url_scheme">com.smkbppi.jurnal</string>
-</resources>

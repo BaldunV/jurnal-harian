@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Carbon\Carbon;
 
 class User extends Authenticatable
 {
@@ -40,6 +40,31 @@ class User extends Authenticatable
     }
 
     /**
+     * Metadata warna badge per jurusan.
+     */
+    public static function jurusanMeta(): array
+    {
+        return [
+            'PPLG' => ['label' => 'PPLG', 'badge' => 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300'],
+            'TJKT' => ['label' => 'TJKT', 'badge' => 'bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300'],
+            'AKL' => ['label' => 'AKL',  'badge' => 'bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300'],
+            'ACP' => ['label' => 'ACP',  'badge' => 'bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300'],
+        ];
+    }
+
+    /**
+     * Jurusan siswa diambil dari bagian belakang kolom kelas (X PPLG -> PPLG).
+     */
+    public function getJurusanAttribute()
+    {
+        $meta = static::jurusanMeta();
+        $parts = explode(' ', trim((string) $this->kelas));
+        $short = end($parts);
+
+        return $meta[$short] ?? ['label' => $short ?: 'Siswa', 'badge' => 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300'];
+    }
+
+    /**
      * Hitung streak hari berturut-turut mengisi jurnal (fully completed 7/7).
      */
     public function getCurrentStreakAttribute()
@@ -49,7 +74,7 @@ class User extends Authenticatable
 
         // Cek jurnal hari ini. Jika belum diisi 7/7, cek mulai dari kemarin.
         $todayJournal = $this->journals()->whereDate('date', $checkDate)->first();
-        if (!$todayJournal || !$todayJournal->is_fully_completed) {
+        if (! $todayJournal || ! $todayJournal->is_fully_completed) {
             $checkDate = Carbon::yesterday();
         }
 
@@ -78,31 +103,31 @@ class User extends Authenticatable
             [
                 'id' => 'starter',
                 'name' => 'Langkah Perdana',
-                'icon' => '🌱',
-                'desc' => 'Menyelesaikan 1 hari 7 kebiasaan baik',
-                'unlocked' => $totalFullJournals >= 1
+                'icon' => 'sprout',
+                'desc' => 'Menyelesaikan 1 hari kebiasaan baik',
+                'unlocked' => $totalFullJournals >= 1,
             ],
             [
                 'id' => 'streak3',
                 'name' => 'Pejuang Disiplin (3 Hari)',
-                'icon' => '🔥',
+                'icon' => 'flame',
                 'desc' => 'Streak 3 hari berturut-turut',
-                'unlocked' => $streak >= 3 || $totalFullJournals >= 3
+                'unlocked' => $streak >= 3 || $totalFullJournals >= 3,
             ],
             [
                 'id' => 'streak7',
                 'name' => 'Bintang Sekolah (7 Hari)',
-                'icon' => '⭐',
+                'icon' => 'star',
                 'desc' => 'Streak 7 hari berturut-turut',
-                'unlocked' => $streak >= 7 || $totalFullJournals >= 7
+                'unlocked' => $streak >= 7 || $totalFullJournals >= 7,
             ],
             [
                 'id' => 'streak30',
                 'name' => 'Pahlawan Kebiasaan (30 Hari)',
-                'icon' => '👑',
+                'icon' => 'crown',
                 'desc' => 'Streak 30 hari berturut-turut',
-                'unlocked' => $streak >= 30 || $totalFullJournals >= 30
-            ]
+                'unlocked' => $streak >= 30 || $totalFullJournals >= 30,
+            ],
         ];
 
         return $badges;
