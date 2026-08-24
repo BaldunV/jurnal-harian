@@ -10,9 +10,31 @@ function StatisticsApp({ stats = [], trendData = [] }) {
   );
 }
 
-const container = document.getElementById('react-statistics-charts');
-if (container) {
+let root = null;
+let mountedContainer = null;
+
+function mountStatistics() {
+  const container = document.getElementById('react-statistics-charts');
+  if (!container) {
+    if (root) {
+      root.unmount();
+      root = null;
+      mountedContainer = null;
+    }
+    return;
+  }
+  if (root && mountedContainer !== container) {
+    root.unmount();
+    root = null;
+  }
+  if (!root) {
+    root = createRoot(container);
+    mountedContainer = container;
+  }
   const raw = container.getAttribute('data-props');
-  createRoot(container).render(<StatisticsApp {...(raw ? JSON.parse(raw) : {})} />);
+  root.render(<StatisticsApp {...(raw ? JSON.parse(raw) : {})} />);
 }
+
+mountStatistics();
+document.addEventListener('livewire:navigated', mountStatistics);
 

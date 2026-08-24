@@ -94,12 +94,9 @@
     </div>
 </div>
 
-<script>
+<script data-navigate-once>
     (function () {
         'use strict';
-
-        var modal = document.getElementById('pwa-install-modal');
-        if (!modal) return;
 
         function isIOS() {
             return /iPhone|iPad|iPod/.test(navigator.userAgent) ||
@@ -115,13 +112,18 @@
                 window.navigator.standalone === true;
         }
 
-        if (isStandalone()) {
-            document.querySelectorAll('[data-pwa-install]').forEach(function (btn) {
-                btn.classList.add('hidden');
-            });
+        function applyStandaloneHiding() {
+            if (isStandalone()) {
+                document.querySelectorAll('[data-pwa-install]').forEach(function (btn) {
+                    btn.classList.add('hidden');
+                });
+            }
         }
 
         function openModal() {
+            var modal = document.getElementById('pwa-install-modal');
+            if (!modal) return;
+
             var ios = isIOS();
             var android = isAndroid();
             var isSecure = window.isSecureContext;
@@ -139,6 +141,8 @@
         }
 
         function closeModal() {
+            var modal = document.getElementById('pwa-install-modal');
+            if (!modal) return;
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             document.body.style.overflow = '';
@@ -166,10 +170,14 @@
         });
 
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+            var modal = document.getElementById('pwa-install-modal');
+            if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
                 closeModal();
             }
         });
+
+        applyStandaloneHiding();
+        document.addEventListener('livewire:navigated', applyStandaloneHiding);
     })();
 </script>
 @endonce

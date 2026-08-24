@@ -489,19 +489,25 @@
 
 
 <!-- Header Banner Modern -->
-<div class="modern-hero-gradient relative rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden">
+<div class="modern-hero-gradient student-parallax-hero relative rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden" data-mobile-parallax>
+    <!-- Mobile depth layers: the journal journey moves behind the task, never over it. -->
+    <div class="student-parallax-layer student-parallax-layer--back" data-parallax-layer data-parallax-speed="0.12" aria-hidden="true">
+        <span class="student-parallax-orbit student-parallax-orbit--one"></span>
+        <span class="student-parallax-orbit student-parallax-orbit--two"></span>
+    </div>
+    <div class="student-parallax-layer student-parallax-layer--mid" data-parallax-layer data-parallax-speed="0.24" aria-hidden="true">
+        <span class="student-parallax-orb student-parallax-orb--sun"></span>
+        <span class="student-parallax-orb student-parallax-orb--mint"></span>
+        <span class="student-parallax-orb student-parallax-orb--amber"></span>
+    </div>
+
     <!-- Shader Waves Background (React) -->
-    <div class="react-shader absolute inset-0 z-0" aria-hidden="true"></div>
+    <div class="react-shader student-parallax-layer absolute inset-0 z-0" data-parallax-layer data-parallax-speed="0.08" aria-hidden="true"></div>
     
     <!-- Animated Mesh Background -->
-    <div class="mesh-background absolute inset-0"></div>
+    <div class="mesh-background student-parallax-layer absolute inset-0" data-parallax-layer data-parallax-speed="0.16" aria-hidden="true"></div>
     
-    <!-- Animated Blobs -->
-    <div class="animated-blob w-72 h-72 bg-emerald-400/30 top-0 right-0" style="animation-delay: 0s;"></div>
-    <div class="animated-blob w-64 h-64 bg-teal-400/25 bottom-0 left-0" style="animation-delay: 5s;"></div>
-    <div class="animated-blob w-56 h-56 bg-emerald-500/20 top-1/2 left-1/3" style="animation-delay: 10s;"></div>
-    
-    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="student-parallax-content relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6" data-parallax-layer data-parallax-speed="0.025">
         <div class="space-y-3">
             <div class="modern-badge inline-flex">
                 @include('partials.icon', ['name' => 'calendar-days', 'class' => 'w-3.5 h-3.5'])
@@ -549,7 +555,7 @@
     </div>
 </div>
 
-
+<div class="student-dashboard-flow">
 <!-- Quick Stats Row Modern -->
 @php
     $totalActive   = \App\Models\Journal::where('user_id', $user->id)->where('is_fully_completed', true)->count();
@@ -573,7 +579,7 @@
     }
     $bestHabitMeta = $bestKey ? $bestHabitsMap[$bestKey] : null;
 @endphp
-<div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+<div class="student-summary-grid grid grid-cols-1 sm:grid-cols-3 gap-4">
     <!-- Stat 1: Hari Lengkap -->
     <div class="stats-card group">
         <div class="flex items-center gap-3 mb-3">
@@ -627,7 +633,7 @@
 </div>
 
 <!-- Daily Quote + Mood Tracker Modern -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="student-secondary-grid grid grid-cols-1 md:grid-cols-2 gap-4">
     <!-- Daily Motivational Quote Modern -->
     <div class="modern-card p-6 relative overflow-hidden">
         <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent rounded-bl-full pointer-events-none"></div>
@@ -703,7 +709,7 @@
 </div>
 
 <!-- Progress Bar Card Modern -->
-<div class="modern-card p-6">
+<div id="progress-hari-ini" class="student-progress-card modern-card p-6">
     <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
             <div class="modern-icon-container bg-gradient-to-br from-emerald-500/15 to-teal-500/10">
@@ -729,7 +735,6 @@
     <div class="relative w-full h-5 bg-slate-100 dark:bg-slate-700/60 rounded-full overflow-hidden p-0.5 border border-slate-200/60 dark:border-slate-600/60">
         <div id="progress-bar-fill" class="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden" style="width: {{ $percent }}%;">
             <div class="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-500 to-teal-400"></div>
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
         </div>
         <div class="absolute inset-0 bg-gradient-to-t from-transparent to-white/20 pointer-events-none rounded-full"></div>
     </div>
@@ -744,15 +749,36 @@
                 </span>
             @endif
         </div>
-        <button type="button" onclick="requestNotificationPermission()" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-all">
-            @include('partials.icon', ['name' => 'bell', 'class' => 'w-3.5 h-3.5'])
-            <span>Aktifkan Pengingat</span>
-        </button>
+        <div class="flex items-center gap-2">
+            @if($journal->completed_count < 7)
+                <a href="#daily-journal" class="student-progress-link text-[11px] font-extrabold text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 px-3 py-1.5 rounded-lg transition-colors inline-flex items-center gap-1.5">
+                    <span>Lanjut checklist</span>
+                    @include('partials.icon', ['name' => 'arrow-right', 'class' => 'w-3.5 h-3.5 rotate-90'])
+                </a>
+            @endif
+            <button type="button" onclick="requestNotificationPermission()" class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-all">
+                @include('partials.icon', ['name' => 'bell', 'class' => 'w-3.5 h-3.5'])
+                <span class="hidden sm:inline">Aktifkan Pengingat</span>
+            </button>
+        </div>
     </div>
 </div>
 
 <!-- Form Checklist 7 Kebiasaan Baik (Livewire) -->
-<livewire:journal-form :journal="$journal" :user="$user" />
+<section id="daily-journal" class="student-journal-section">
+    <div class="student-journal-intro flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <span class="student-section-kicker">Ritual hari ini</span>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white mt-1">Checklist 7 kebiasaan</h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-xl">Centang satu per satu. Perubahan tersimpan otomatis, jadi kamu bisa melanjutkan kapan saja.</p>
+        </div>
+        <a href="#progress-hari-ini" class="self-start sm:self-auto text-xs font-extrabold text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors">
+            @include('partials.icon', ['name' => 'chart-column', 'class' => 'w-3.5 h-3.5'])
+            Lihat progress
+        </a>
+    </div>
+    <livewire:journal-form :journal="$journal" :user="$user" />
+</section>
 
 <!-- Mini Habit Heatmap (Konsistensi 7 Hari Terakhir) -->
 @php
@@ -768,7 +794,7 @@
     // Balik urutan: kiri = hari terlama, kanan = hari terbaru
     $heatmapJournals = $recentJournals->reverse()->values();
 @endphp
-<div class="bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80">
+<div class="student-insight-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl p-5 sm:p-6 shadow-sm border border-slate-200/80">
     <div class="flex items-center justify-between mb-4">
         <div>
             <h3 class="font-extrabold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
@@ -828,7 +854,7 @@
 </div>
 
 <!-- Riwayat Pengisian 7 Hari Terakhir -->
-<div class="bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl p-6 shadow-sm border border-slate-200/80 mt-6">
+<div class="student-insight-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl p-6 shadow-sm border border-slate-200/80">
     <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
         <div>
             <h3 class="font-extrabold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
@@ -837,7 +863,7 @@
             </h3>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftar pencapaian jurnal harian Anda selama 7 hari terakhir.</p>
         </div>
-        <a href="{{ route('history') }}" class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
+        <a href="{{ route('history') }}" wire:navigate class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
             <span>Lihat Kalender</span>
             @include('partials.icon', ['name' => 'arrow-right', 'class' => 'w-3 h-3'])
         </a>
@@ -892,6 +918,8 @@
             <div class="text-center py-6 text-slate-400 dark:text-slate-500 text-xs">Belum ada riwayat pengisian.</div>
         @endforelse
     </div>
+</div>
+
 </div>
 
 <!-- Modal Detail Jurnal Tanggal (Ringkasan Riwayat) -->
@@ -970,7 +998,7 @@
 
 @push('scripts')
 @vite('resources/js/apps/login-react.tsx')
-<script>
+<script data-navigate-once>
     function setPresetJam(type, time) {
         const input = document.getElementById(type === 'bangun' ? 'bangun-pagi-time' : 'input-tidur-note');
         if (!input) return;
@@ -1002,7 +1030,8 @@
         return `${String(hours).padStart(2, '0')}:${minutes}`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('livewire:navigated', () => {
+        if (!document.getElementById('journal-form')) return;
 
         updateTimeStatusBadges();
 
@@ -1196,7 +1225,7 @@
         
         if (!modalBody || !titleElem) return;
 
-        modalBody.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">@include('partials.icon', ['name' => 'loader-circle', 'class' => 'w-8 h-8 mx-auto mb-2 animate-spin'])<p>Memuat data jurnal...</p></div>';
+        modalBody.innerHTML = '';
         toggleModal('detail-modal');
 
         fetch("{{ url('/api/journal') }}/" + date)
@@ -1222,8 +1251,8 @@
             const habitList = [
                 { name: 'Bangun Pagi', status: j.bangun_pagi, icon: '@include('partials.icon', ['name' => 'sunrise', 'class' => 'w-6 h-6'])', note: j.bangun_pagi_time ? 'Jam bangun: ' + j.bangun_pagi_time.slice(0, 5) : null },
                 { name: 'Beribadah', status: j.beribadah, icon: '@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-6 h-6'])', note: formatPrayerDetails(j.ibadah_details) },
-                { name: 'Berolahraga', status: j.berolahraga, icon: '@include('partials.icon', ['name' => 'footprints', 'class' => 'w-6 h-6'])', note: j.olahraga_note },
-                { name: 'Makan Sehat', status: j.makan_sehat, icon: '@include('partials.icon', ['name' => 'salad', 'class' => 'w-6 h-6'])', note: j.makan_note },
+                { name: 'Berolahraga', status: j.berolahraga, icon: '@include('partials.icon', ['name' => 'footprints', 'class' => 'w-6 h-6'])', note: j.olahraga_note, photo: j.olahraga_photo_url },
+                { name: 'Makan Sehat', status: j.makan_sehat, icon: '@include('partials.icon', ['name' => 'salad', 'class' => 'w-6 h-6'])', note: j.makan_note, photo: j.makan_photo_url },
                 { name: 'Gemar Belajar', status: j.gemar_belajar, icon: '@include('partials.icon', ['name' => 'book-open', 'class' => 'w-6 h-6'])', note: j.belajar_note },
                 { name: 'Bermasyarakat', status: j.bermasyarakat, icon: '@include('partials.icon', ['name' => 'handshake', 'class' => 'w-6 h-6'])', note: j.masyarakat_note },
                 { name: 'Tidur Cepat', status: j.tidur_cepat, icon: '@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-6 h-6'])', note: j.tidur_note },
@@ -1242,6 +1271,7 @@
                                 </span>
                             </div>
                             ${h.note ? `<p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1 italic bg-white/60 dark:bg-slate-700/60 p-2 rounded-lg border border-slate-100 dark:border-slate-600">"${h.note}"</p>` : ''}
+                            ${h.photo ? `<a href="${h.photo}" target="_blank" rel="noopener" class="mt-2 inline-block"><img src="${h.photo}" alt="Foto bukti ${h.name}" class="w-20 h-20 rounded-lg object-cover border border-slate-200 dark:border-slate-600 shadow-sm hover:opacity-90 transition-opacity"></a>` : ''}
                         </div>
                     </div>
                 `;
@@ -1396,6 +1426,7 @@
         const data = {};
         form.querySelectorAll('input, select, textarea').forEach(function (el) {
             if (!el.name) return;
+            if (el.type === 'file') return;
             if (el.type === 'checkbox') {
                 data[el.name] = el.checked;
             } else if (el.type === 'radio') {
@@ -1482,6 +1513,102 @@
         }, 500);
     }
 
+    function setPhotoState(type, state, url) {
+        const emptyEl = document.getElementById(type + '-photo-empty');
+        const previewEl = document.getElementById(type + '-photo-preview');
+        const uploadingEl = document.getElementById(type + '-photo-uploading');
+        const imgEl = document.getElementById(type + '-photo-img');
+        if (!emptyEl || !previewEl) return;
+
+        if (state === 'uploading') {
+            emptyEl.classList.add('hidden');
+            previewEl.classList.remove('flex');
+            previewEl.classList.add('hidden');
+            uploadingEl.classList.remove('hidden');
+            uploadingEl.classList.add('inline-flex');
+        } else if (state === 'preview') {
+            uploadingEl.classList.add('hidden');
+            uploadingEl.classList.remove('inline-flex');
+            emptyEl.classList.add('hidden');
+            previewEl.classList.remove('hidden');
+            previewEl.classList.add('flex');
+            if (imgEl && url) imgEl.src = url;
+        } else {
+            uploadingEl.classList.add('hidden');
+            uploadingEl.classList.remove('inline-flex');
+            previewEl.classList.remove('flex');
+            previewEl.classList.add('hidden');
+            emptyEl.classList.remove('hidden');
+        }
+    }
+
+    function handlePhotoUpload(type, input) {
+        const file = input.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            alert('File harus berupa gambar.');
+            input.value = '';
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ukuran foto maksimal 5 MB.');
+            input.value = '';
+            return;
+        }
+
+        const comp = getJournalComponent();
+        if (!comp) return;
+
+        // Preview lokal segera
+        const imgEl = document.getElementById(type + '-photo-img');
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            if (imgEl) imgEl.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+
+        setPhotoState(type, 'uploading');
+
+        const prop = type === 'olahraga' ? 'olahragaPhoto' : 'makanPhoto';
+        const method = type === 'olahraga' ? 'saveOlahragaPhoto' : 'saveMakanPhoto';
+
+        comp.upload(prop, file)
+            .then(function () { return comp.call(method); })
+            .then(function (res) {
+                if (res && res.success) {
+                    setPhotoState(type, 'preview', res.photo_url);
+                } else if (res && res.is_locked) {
+                    alert(res.message);
+                    setPhotoState(type, 'empty');
+                } else {
+                    setPhotoState(type, 'empty');
+                }
+            })
+            .catch(function () {
+                alert('Gagal mengunggah foto. Periksa koneksi lalu coba lagi.');
+                setPhotoState(type, 'empty');
+            })
+            .finally(function () {
+                input.value = '';
+            });
+    }
+
+    function removePhoto(type) {
+        const comp = getJournalComponent();
+        if (!comp) return;
+        comp.call(type === 'olahraga' ? 'removeOlahragaPhoto' : 'removeMakanPhoto')
+            .then(function (res) {
+                if (res && res.success) {
+                    setPhotoState(type, 'empty');
+                } else if (res && res.is_locked) {
+                    alert(res.message);
+                }
+            })
+            .catch(function () {
+                alert('Gagal menghapus foto. Coba lagi.');
+            });
+    }
+
     function flushOfflineQueue() {
         if (!navigator.onLine) return;
         const queued = getOfflineQueue();
@@ -1514,7 +1641,8 @@
     }
 
     window.addEventListener('online', flushOfflineQueue);
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('livewire:navigated', function () {
+        if (!document.getElementById('journal-form')) return;
         setTimeout(function () {
             if (navigator.onLine) flushOfflineQueue();
             if (getOfflineQueue()) showOfflineBanner();
@@ -1539,25 +1667,19 @@ if (permission === 'granted') {
         }
     }
 </script>
-<script src="{{ asset('js/rive.min.js') }}"></script>
-<script>
+<script src="{{ asset('js/rive.min.js') }}" data-navigate-once></script>
+<script data-navigate-once>
     (() => {
         'use strict';
 
-        const duoCanvas = document.getElementById('duo-lingo-canvas');
-
-        if (!duoCanvas || typeof rive === 'undefined') {
-            return;
-        }
-
-        if (rive.RuntimeLoader) {
-            rive.RuntimeLoader.setWasmUrl(@json(asset('js/rive.wasm')));
-        }
-
         let duoInstance = null;
+        let duoCanvas = null;
         let duoTriggerCycle = null;
         let duoTriggerTimer = null;
         let duoTriggerIndex = 0;
+        let duoClickHandler = null;
+        let duoInitRetryTimer = null;
+        let duoCanvasResizeObserver = null;
 
         function stopDuoTriggerLoop() {
             if (duoTriggerTimer !== null) {
@@ -1628,6 +1750,7 @@ if (permission === 'granted') {
         function resizeDuoCanvas() {
             if (
                 duoInstance &&
+                duoCanvas &&
                 duoCanvas.offsetWidth > 0 &&
                 duoCanvas.offsetHeight > 0 &&
                 typeof duoInstance.resizeDrawingSurfaceToCanvas === 'function'
@@ -1636,46 +1759,228 @@ if (permission === 'granted') {
             }
         }
 
-        duoInstance = new rive.Rive({
-            src: @json(asset('rive/shake-it-duo.riv')),
-            canvas: duoCanvas,
-            autoplay: true,
-            layout: new rive.Layout({
-                fit: rive.Fit.Contain,
-                alignment: rive.Alignment.Center,
-            }),
-            onLoad: () => {
-                resizeDuoCanvas();
-
-                const contents = duoInstance.contents;
-                const artboards = contents?.artboards ?? [];
-                const target = artboards.find(
-                    (artboard) => artboard.stateMachines.length > 0
-                );
-
-                if (target && typeof duoInstance.play === 'function') {
-                    duoInstance.play(target.stateMachines[0].name);
-                }
-
-                setTimeout(() => {
-                    if (duoInstance && duoInstance.loaded) {
-                        startDuoTriggerLoop();
-                    }
-                }, 500);
-            },
-            onLoadError: (error) => {
-                console.error('Duo Lingo gagal:', error);
-            },
-        });
-
-        duoCanvas.addEventListener('click', () => {
-            if (duoTriggerCycle && duoTriggerCycle.length) {
-                duoTriggerCycle[duoTriggerIndex % duoTriggerCycle.length].fire();
-                duoTriggerIndex++;
+        function watchDuoCanvasSize() {
+            if (!duoCanvas || typeof ResizeObserver === 'undefined') {
+                return;
             }
-        });
+
+            duoCanvasResizeObserver = new ResizeObserver(resizeDuoCanvas);
+            duoCanvasResizeObserver.observe(duoCanvas);
+        }
+
+        function cleanupDuo() {
+            if (duoInitRetryTimer !== null) {
+                clearTimeout(duoInitRetryTimer);
+                duoInitRetryTimer = null;
+            }
+            stopDuoTriggerLoop();
+            if (duoCanvasResizeObserver) {
+                duoCanvasResizeObserver.disconnect();
+                duoCanvasResizeObserver = null;
+            }
+            if (duoClickHandler && duoCanvas) {
+                duoCanvas.removeEventListener('click', duoClickHandler);
+                duoClickHandler = null;
+            }
+            if (duoInstance) {
+                try {
+                    duoInstance.delete();
+                } catch (e) {
+                    if (typeof duoInstance.cleanup === 'function') duoInstance.cleanup();
+                }
+                duoInstance = null;
+            }
+            duoCanvas = null;
+        }
+
+        function initDuoRive() {
+            const canvas = document.getElementById('duo-lingo-canvas');
+
+            if (!canvas) {
+                cleanupDuo();
+                return;
+            }
+
+            if (typeof rive === 'undefined') {
+                if (duoInitRetryTimer === null) {
+                    duoInitRetryTimer = setTimeout(() => {
+                        duoInitRetryTimer = null;
+                        initDuoRive();
+                    }, 200);
+                }
+                return;
+            }
+
+            cleanupDuo();
+            duoCanvas = canvas;
+
+            if (rive.RuntimeLoader) {
+                rive.RuntimeLoader.setWasmUrl(@json(asset('js/rive.wasm')));
+            }
+
+            duoInstance = new rive.Rive({
+                src: @json(asset('rive/shake-it-duo.riv')),
+                canvas: duoCanvas,
+                autoplay: true,
+                layout: new rive.Layout({
+                    fit: rive.Fit.Contain,
+                    alignment: rive.Alignment.Center,
+                }),
+                onLoad: () => {
+                    resizeDuoCanvas();
+                    watchDuoCanvasSize();
+
+                    const contents = duoInstance.contents;
+                    const artboards = contents?.artboards ?? [];
+                    const target = artboards.find(
+                        (artboard) => artboard.stateMachines.length > 0
+                    );
+
+                    if (target && typeof duoInstance.play === 'function') {
+                        duoInstance.play(target.stateMachines[0].name);
+                    }
+
+                    setTimeout(() => {
+                        if (duoInstance && duoInstance.loaded) {
+                            startDuoTriggerLoop();
+                        }
+                    }, 500);
+                },
+                onLoadError: (error) => {
+                    console.error('Duo Lingo gagal:', error);
+                },
+            });
+
+            duoClickHandler = () => {
+                if (duoTriggerCycle && duoTriggerCycle.length) {
+                    duoTriggerCycle[duoTriggerIndex % duoTriggerCycle.length].fire();
+                    duoTriggerIndex++;
+                }
+            };
+            duoCanvas.addEventListener('click', duoClickHandler);
+        }
 
         window.addEventListener('resize', resizeDuoCanvas);
+
+        document.addEventListener('livewire:navigated', initDuoRive);
+    })();
+</script>
+<script data-navigate-once>
+    (() => {
+        'use strict';
+
+        let parallaxRoot = null;
+        let parallaxLayers = [];
+        let parallaxFrame = null;
+        let parallaxScrollHandler = null;
+        let parallaxResizeHandler = null;
+        let parallaxViewportQuery = null;
+        let parallaxViewportHandler = null;
+        let parallaxMotionQuery = null;
+        let parallaxMotionHandler = null;
+
+        function stopStudentParallax() {
+            if (parallaxFrame !== null) {
+                cancelAnimationFrame(parallaxFrame);
+                parallaxFrame = null;
+            }
+            if (parallaxRoot && parallaxScrollHandler) {
+                window.removeEventListener('scroll', parallaxScrollHandler);
+            }
+            if (parallaxRoot && parallaxResizeHandler) {
+                window.removeEventListener('resize', parallaxResizeHandler);
+            }
+            if (parallaxViewportQuery && parallaxViewportHandler) {
+                if (parallaxViewportQuery.removeEventListener) {
+                    parallaxViewportQuery.removeEventListener('change', parallaxViewportHandler);
+                } else if (parallaxViewportQuery.removeListener) {
+                    parallaxViewportQuery.removeListener(parallaxViewportHandler);
+                }
+            }
+            if (parallaxMotionQuery && parallaxMotionHandler) {
+                if (parallaxMotionQuery.removeEventListener) {
+                    parallaxMotionQuery.removeEventListener('change', parallaxMotionHandler);
+                } else if (parallaxMotionQuery.removeListener) {
+                    parallaxMotionQuery.removeListener(parallaxMotionHandler);
+                }
+            }
+            parallaxRoot?.classList.remove('student-parallax-active');
+            parallaxLayers.forEach((layer) => {
+                layer.style.transform = '';
+            });
+            parallaxRoot = null;
+            parallaxLayers = [];
+            parallaxScrollHandler = null;
+            parallaxResizeHandler = null;
+            parallaxViewportQuery = null;
+            parallaxViewportHandler = null;
+            parallaxMotionQuery = null;
+            parallaxMotionHandler = null;
+        }
+
+        function initStudentParallax() {
+            stopStudentParallax();
+
+            const root = document.querySelector('[data-mobile-parallax]');
+            if (!root) return;
+
+            const mobileQuery = window.matchMedia('(max-width: 1023px)');
+            const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const saveData = Boolean(navigator.connection && navigator.connection.saveData);
+
+            if (!mobileQuery.matches || reducedMotionQuery.matches || saveData) return;
+
+            parallaxRoot = root;
+            parallaxLayers = Array.from(root.querySelectorAll('[data-parallax-layer]'));
+            parallaxRoot.classList.add('student-parallax-active');
+
+            const schedule = () => {
+                if (parallaxFrame === null) {
+                    parallaxFrame = requestAnimationFrame(update);
+                }
+            };
+
+            const update = () => {
+                parallaxFrame = null;
+                if (!parallaxRoot || !parallaxRoot.isConnected) return;
+
+                const rect = parallaxRoot.getBoundingClientRect();
+                const pageTop = rect.top + window.scrollY;
+                const maxDistance = Math.max(0, parallaxRoot.offsetHeight);
+                const distance = Math.max(0, Math.min(maxDistance, window.scrollY - pageTop));
+
+                parallaxLayers.forEach((layer) => {
+                    const speed = Number(layer.dataset.parallaxSpeed || 0);
+                    layer.style.transform = `translate3d(0, ${Math.round(distance * speed * 10) / 10}px, 0)`;
+                });
+            };
+
+            parallaxScrollHandler = schedule;
+            parallaxResizeHandler = schedule;
+            window.addEventListener('scroll', parallaxScrollHandler, { passive: true });
+            window.addEventListener('resize', parallaxResizeHandler, { passive: true });
+
+            parallaxViewportQuery = mobileQuery;
+            parallaxViewportHandler = initStudentParallax;
+            if (parallaxViewportQuery.addEventListener) {
+                parallaxViewportQuery.addEventListener('change', parallaxViewportHandler);
+            } else if (parallaxViewportQuery.addListener) {
+                parallaxViewportQuery.addListener(parallaxViewportHandler);
+            }
+
+            parallaxMotionQuery = reducedMotionQuery;
+            parallaxMotionHandler = initStudentParallax;
+            if (parallaxMotionQuery.addEventListener) {
+                parallaxMotionQuery.addEventListener('change', parallaxMotionHandler);
+            } else if (parallaxMotionQuery.addListener) {
+                parallaxMotionQuery.addListener(parallaxMotionHandler);
+            }
+
+            update();
+        }
+
+        initStudentParallax();
+        document.addEventListener('livewire:navigated', initStudentParallax);
     })();
 </script>
 @endpush

@@ -4,33 +4,70 @@
 
 @section('content')
 @php($isRegisteredView = request('view') === 'registered')
-<div class="bg-gradient-to-r from-primary-700 via-primary-600 to-primary-500 rounded-3xl p-6 sm:p-8 text-white shadow-card">
-    <div class="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <div>
-            <div class="text-xs font-bold uppercase tracking-widest text-emerald-100 mb-2">@include('partials.icon', ['name' => 'shield-check', 'class' => 'w-3.5 h-3.5 inline-block mr-1']) Dashboard Admin</div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold">{{ $isRegisteredView ? 'Siswa Terdaftar' : 'Rekap PAN Siswa' }}</h1>
-            <p class="text-sm text-emerald-100 mt-1">{{ $isRegisteredView ? 'Data seluruh siswa yang telah mendaftar ke sistem.' : 'Ringkasan keterisian jurnal seluruh siswa.' }}</p>
+<div class="admin-hero rounded-3xl p-5 sm:p-7 text-white shadow-card">
+    <div class="flex flex-col gap-5">
+        <div class="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
+            <div>
+                <div class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-emerald-100 mb-2">@include('partials.icon', ['name' => 'shield-check', 'class' => 'w-3.5 h-3.5 inline-block mr-1']) Panel Admin</div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">{{ $isRegisteredView ? 'Siswa Terdaftar' : 'Rekap PAN Siswa' }}</h1>
+                <p class="text-sm text-emerald-50/80 mt-1 max-w-2xl">{{ $isRegisteredView ? 'Kelola data siswa, akses masuk, dan kanal OTP dari satu tempat.' : 'Pantau ritme pengisian jurnal dan capaian kebiasaan seluruh siswa.' }}</p>
+            </div>
+            <nav class="admin-view-switcher self-start lg:self-auto" aria-label="Tampilan admin">
+                <a href="{{ route('admin.dashboard') }}" wire:navigate @if(!$isRegisteredView) aria-current="page" @endif>
+                    @include('partials.icon', ['name' => 'chart-column', 'class' => 'w-3.5 h-3.5'])
+                    Rekap
+                </a>
+                <a href="{{ route('admin.dashboard', ['view' => 'registered']) }}#daftar-siswa-terdaftar" wire:navigate @if($isRegisteredView) aria-current="page" @endif>
+                    @include('partials.icon', ['name' => 'user-check', 'class' => 'w-3.5 h-3.5'])
+                    Siswa terdaftar
+                </a>
+            </nav>
         </div>
+
         @if(!$isRegisteredView)
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <form method="GET" class="flex items-center gap-2 bg-white/10 p-2 rounded-xl border border-white/20">
-                <label for="kelas" class="text-xs font-bold">Kelas</label>
-                <select id="kelas" name="kelas" onchange="this.form.submit()" class="rounded-lg px-3 py-2 text-xs font-bold text-slate-700 bg-white dark:bg-slate-800 dark:text-slate-100">
-                    <option value="">Semua kelas</option>
-                    @foreach($classList as $kelas)
-                        <option value="{{ $kelas }}" @selected(request('kelas') === $kelas)>{{ $kelas }}</option>
-                    @endforeach
-                </select>
-            </form>
-        </div>
+        <form method="GET" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-fit bg-white/10 p-2 rounded-xl border border-white/15">
+            <label for="kelas" class="text-[11px] font-extrabold uppercase tracking-wider text-emerald-50 px-2">Pantau kelas</label>
+            <select id="kelas" name="kelas" onchange="this.form.submit()" class="w-full sm:w-auto rounded-lg px-3 py-2 text-xs font-bold text-slate-700 bg-white dark:bg-slate-800 dark:text-slate-100">
+                <option value="">Semua kelas</option>
+                @foreach($classList as $kelas)
+                    <option value="{{ $kelas }}" @selected(request('kelas') === $kelas)>{{ $kelas }}</option>
+                @endforeach
+            </select>
+        </form>
         @endif
     </div>
 </div>
 
+@if(!$isRegisteredView)
+<div class="admin-kpi-strip">
+    <div class="admin-kpi">
+        <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Capaian minggu</div>
+        <div class="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{{ $weeklyRecap['percentage'] }}%</div>
+        <div class="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">{{ $weekStart->translatedFormat('d M') }} - {{ $weekEnd->translatedFormat('d M') }}</div>
+    </div>
+    <div class="admin-kpi">
+        <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Hari lengkap</div>
+        <div class="mt-2 text-2xl font-black text-teal-600 dark:text-teal-400">{{ $weeklyRecap['full_days'] }}</div>
+        <div class="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Jurnal 7/7 terisi</div>
+    </div>
+    <div class="admin-kpi">
+        <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Jurnal masuk</div>
+        <div class="mt-2 text-2xl font-black text-primary-600 dark:text-primary-400">{{ $weeklyRecap['entry_count'] }}</div>
+        <div class="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Dari {{ $weeklyRecap['student_count'] }} siswa</div>
+    </div>
+    <div class="admin-kpi">
+        <div class="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-500">Kebiasaan selesai</div>
+        <div class="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">{{ $weeklyRecap['completed_habits'] }}</div>
+        <div class="mt-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">Akumulasi minggu ini</div>
+    </div>
+</div>
+@endif
+
 @if($isRegisteredView)
-<section id="manajemen-siswa" class="bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden mb-6">
-    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+<section id="manajemen-siswa" class="admin-management-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden mb-6">
+    <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
+            <div class="text-[10px] font-extrabold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-1">Data akses</div>
             <h2 class="font-extrabold text-slate-800 dark:text-slate-100">@include('partials.icon', ['name' => 'user-plus', 'class' => 'w-4 h-4 inline-block mr-1 text-primary-600'])Manajemen Siswa</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tambah banyak siswa sekaligus lewat tabel input atau file Excel/CSV.</p>
         </div>
@@ -57,13 +94,15 @@
     {{-- Panel: Tambah Siswa Massal (tabel dinamis) --}}
     <div id="panel-bulk" class="hidden border-b border-slate-100 dark:border-slate-700">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
+            <table class="w-full min-w-[980px] text-left text-xs text-slate-700 dark:text-slate-300">
                 <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                     <tr>
                         <th class="py-3 px-4 w-12">No.</th>
                         <th class="py-3 px-4">Nama Siswa</th>
                         <th class="py-3 px-4">NIS</th>
                         <th class="py-3 px-4">Password</th>
+                        <th class="py-3 px-4">No. HP OTP</th>
+                        <th class="py-3 px-4">Kanal OTP</th>
                         <th class="py-3 px-4 w-16 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -85,7 +124,7 @@
         <div id="import-dropzone" class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/5 transition-colors">
             <div class="text-slate-400 dark:text-slate-500 mx-auto mb-2">@include('partials.icon', ['name' => 'cloud-fog', 'class' => 'w-8 h-8'])</div>
             <p class="text-xs font-bold text-slate-600 dark:text-slate-300">Klik untuk pilih file Excel (.xlsx) atau CSV</p>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password</strong> &mdash; unduh template terlebih dahulu jika perlu.</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password | No HP | Kanal OTP</strong> &mdash; kanal bisa <strong>whatsapp</strong> atau <strong>sms</strong>.</p>
         </div>
         <div id="import-loading" class="hidden p-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Memproses file&hellip;</div>
         <div id="import-preview" class="hidden mt-4">
@@ -96,13 +135,15 @@
                 </button>
             </div>
             <div class="overflow-x-auto max-h-80 overflow-y-auto rounded-2xl border border-slate-200 dark:border-slate-700">
-                <table class="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
+                <table class="w-full min-w-[980px] text-left text-xs text-slate-700 dark:text-slate-300">
                     <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px] sticky top-0">
                         <tr>
                             <th class="py-3 px-4 w-12">No.</th>
                             <th class="py-3 px-4">Nama Siswa</th>
                             <th class="py-3 px-4">NIS</th>
                             <th class="py-3 px-4">Password</th>
+                            <th class="py-3 px-4">No. HP OTP</th>
+                            <th class="py-3 px-4">Kanal OTP</th>
                             <th class="py-3 px-4 w-40">Status</th>
                         </tr>
                     </thead>
@@ -143,8 +184,8 @@
         </div>
     </div>
 </section>
-<section id="daftar-siswa-terdaftar" class="bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
-    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+<section id="daftar-siswa-terdaftar" class="admin-management-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+    <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>
             <h2 class="font-extrabold text-slate-800 dark:text-slate-100">@include('partials.icon', ['name' => 'user-check', 'class' => 'w-4 h-4 inline-block mr-1 text-primary-600'])Siswa Terdaftar</h2>
             <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -169,7 +210,7 @@
         </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="w-full min-w-[680px] text-left text-xs text-slate-700 dark:text-slate-300">
+        <table class="admin-student-table w-full min-w-[980px] text-left text-xs text-slate-700 dark:text-slate-300">
             <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                 <tr>
                     <th class="py-3.5 px-4">No.</th>
@@ -177,22 +218,41 @@
                     <th class="py-3.5 px-4">Nama Siswa</th>
                     <th class="py-3.5 px-4">Kelas</th>
                     <th class="py-3.5 px-4">Email</th>
+                    <th class="py-3.5 px-4">Nomor HP & Kanal OTP</th>
                     <th class="py-3.5 px-4">Terdaftar</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 @forelse($students as $index => $student)
                     <tr class="hover:bg-emerald-50/40 dark:hover:bg-emerald-500/10 transition-colors">
-                        <td class="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500">{{ $index + 1 }}</td>
-                        <td class="py-3.5 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">{{ $student->nis }}</td>
-                        <td class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{{ $student->name }}</td>
-                        <td class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-bold">{{ $student->kelas }}</span></td>
-                        <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ $student->email ?: '—' }}</td>
-                        <td class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ optional($student->created_at)->translatedFormat('d M Y, H:i') }}</td>
+                        <td data-label="No." class="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500">{{ $index + 1 }}</td>
+                        <td data-label="NIS" class="py-3.5 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">{{ $student->nis }}</td>
+                        <td data-label="Nama" class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{{ $student->name }}</td>
+                        <td data-label="Kelas" class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-bold">{{ $student->kelas }}</span></td>
+                        <td data-label="Email" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ $student->email ?: '—' }}</td>
+                        <td data-label="Nomor HP & OTP" class="py-3.5 px-4">
+                                <form action="{{ route('admin.students.update', $student) }}" method="POST" class="admin-otp-form flex min-w-[330px] items-center gap-1.5">
+                                @csrf
+                                @method('PATCH')
+                                <input type="tel" name="phone" value="{{ $student->phone }}" placeholder="08xxxxxxxxxx" inputmode="tel"
+                                    class="w-36 px-2.5 py-2 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                <select name="otp_channel" class="w-24 px-2 py-2 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <option value="whatsapp" @selected(($student->otp_channel ?: 'whatsapp') === 'whatsapp')>WhatsApp</option>
+                                    <option value="sms" @selected($student->otp_channel === 'sms')>SMS</option>
+                                </select>
+                                <button type="submit" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-500/25" title="Simpan pengaturan OTP">
+                                    @include('partials.icon', ['name' => 'save', 'class' => 'w-3.5 h-3.5'])
+                                </button>
+                            </form>
+                            @if(!$student->phone)
+                                <span class="block mt-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">OTP belum aktif</span>
+                            @endif
+                        </td>
+                        <td data-label="Terdaftar" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ optional($student->created_at)->translatedFormat('d M Y, H:i') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang terdaftar pada kelas ini.</td>
+                        <td colspan="7" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang terdaftar pada kelas ini.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -200,12 +260,12 @@
     </div>
 </section>
 @else
-<div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+<div class="admin-recap-grid grid grid-cols-1 xl:grid-cols-2 gap-6">
     @foreach ([
         ['title' => 'Rekap Minggu Ini', 'period' => $weekStart->translatedFormat('d M') . ' – ' . $weekEnd->translatedFormat('d M Y'), 'data' => $weeklyRecap, 'tone' => 'emerald'],
         ['title' => 'Rekap Bulan Ini', 'period' => $monthStart->translatedFormat('F Y'), 'data' => $monthlyRecap, 'tone' => 'teal'],
     ] as $recap)
-    <section class="bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
+    <section class="admin-recap-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
         <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex items-start justify-between gap-3">
             <div><h2 class="font-extrabold text-slate-800 dark:text-slate-100">{{ $recap['title'] }}</h2><p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ $recap['period'] }}</p></div>
             <span class="px-3 py-1 rounded-full {{ $recap['tone'] === 'emerald' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300' : 'bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300' }} text-xs font-extrabold">{{ $recap['data']['percentage'] }}% capaian</span>
@@ -232,73 +292,6 @@
 </div>
 @endif
 @endsection
-
-@push('scripts')
-<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script type="text/babel">
-    const explorerRoot = document.getElementById('admin-student-explorer');
-    const studentDataElement = document.getElementById('admin-student-data');
-
-    if (explorerRoot && studentDataElement) {
-        const students = JSON.parse(studentDataElement.textContent);
-
-        function StudentExplorer() {
-            const [query, setQuery] = React.useState('');
-            const [kelas, setKelas] = React.useState('');
-            const [period, setPeriod] = React.useState('week');
-            const classes = [...new Set(students.map(student => student.kelas))].sort();
-            const filteredStudents = students.filter(student => {
-                const keyword = query.toLowerCase();
-                return (!kelas || student.kelas === kelas) &&
-                    (!keyword || student.name.toLowerCase().includes(keyword) || student.nis.toLowerCase().includes(keyword));
-            });
-
-            return (
-                <div className="p-5">
-                    <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between mb-4">
-                        <div className="flex bg-slate-100 dark:bg-slate-700/60 rounded-xl p-1 w-fit">
-                            <button onClick={() => setPeriod('week')} className={`px-3 py-2 rounded-lg text-xs font-bold transition ${period === 'week' ? 'bg-white dark:bg-slate-800 text-primary-700 dark:text-primary-300 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Minggu ini</button>
-                            <button onClick={() => setPeriod('month')} className={`px-3 py-2 rounded-lg text-xs font-bold transition ${period === 'month' ? 'bg-white dark:bg-slate-800 text-primary-700 dark:text-primary-300 shadow-sm' : 'text-slate-500 dark:text-slate-400'}`}>Bulan ini</button>
-                        </div>
-                        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                            <input value={query} onChange={event => setQuery(event.target.value)} placeholder="Cari nama atau NIS..." className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                            <select value={kelas} onChange={event => setKelas(event.target.value)} className="px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 text-xs font-semibold text-slate-600 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <option value="">Semua kelas</option>
-                                {classes.map(item => <option key={item} value={item}>{item}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">Menampilkan <strong className="text-slate-700 dark:text-slate-200">{filteredStudents.length}</strong> dari {students.length} siswa</p>
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[620px] text-left text-xs text-slate-700 dark:text-slate-300">
-                            <thead className="bg-slate-50 dark:bg-slate-700/40 text-[10px] uppercase tracking-wider text-slate-400">
-                                <tr><th className="p-3">Siswa</th><th className="p-3 text-center">Hari Diisi</th><th className="p-3 text-center">Lengkap 7/7</th><th className="p-3 text-center">Kebiasaan</th><th className="p-3 text-right">Capaian</th></tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {filteredStudents.map(student => {
-                                    const recap = student[period];
-                                    return <tr key={student.id} className="hover:bg-emerald-50/40 dark:hover:bg-emerald-500/10 transition-colors">
-                                        <td className="p-3"><div className="font-bold text-slate-800 dark:text-slate-100">{student.name}</div><div className="text-[10px] text-slate-500 dark:text-slate-400">{student.nis} · {student.kelas}</div></td>
-                                        <td className="p-3 text-center font-semibold text-slate-700 dark:text-slate-200">{recap.entries}</td>
-                                        <td className="p-3 text-center font-bold text-emerald-600 dark:text-emerald-400">{recap.full_days}</td>
-                                        <td className="p-3 text-center font-semibold text-slate-700 dark:text-slate-200">{recap.completed_habits}</td>
-                                        <td className="p-3 text-right"><span className="font-extrabold text-primary-700 dark:text-primary-300">{recap.percentage}%</span><div className="w-20 h-1.5 ml-auto mt-1 rounded-full bg-slate-100 dark:bg-slate-700/60 overflow-hidden"><div className="h-full bg-primary-500" style={ { width: recap.percentage + '%' } }></div></div></td>
-                                    </tr>;
-                                })}
-                                {!filteredStudents.length && <tr><td colSpan="5" className="p-8 text-center text-slate-400 dark:text-slate-500">Data siswa tidak ditemukan.</td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
-        }
-
-        ReactDOM.createRoot(explorerRoot).render(<StudentExplorer />);
-    }
-</script>
-@endpush
 
 @push('scripts')
 <script>
@@ -351,11 +344,14 @@
         const tr = document.createElement('tr');
         tr.setAttribute('data-row', '');
         tr.className = 'bg-white dark:bg-slate-800/60';
+        const channel = data.otp_channel === 'sms' ? 'sms' : 'whatsapp';
         tr.innerHTML = `
             <td class="py-2.5 px-4"><span class="row-no font-bold text-slate-400 dark:text-slate-500"></span></td>
-            <td class="py-2.5 px-4"><input type="text" name="name" value="${data.name || ''}" placeholder="Nama lengkap siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
-            <td class="py-2.5 px-4"><input type="text" name="nis" value="${data.nis || ''}" placeholder="Nomor Induk Siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
-            <td class="py-2.5 px-4"><input type="text" name="password" value="${data.password || ''}" placeholder="Minimal 6 karakter" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4"><input type="text" name="name" value="${escapeHtml(data.name || '')}" placeholder="Nama lengkap siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4"><input type="text" name="nis" value="${escapeHtml(data.nis || '')}" placeholder="Nomor Induk Siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4"><input type="text" name="password" value="${escapeHtml(data.password || '')}" placeholder="Minimal 6 karakter" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4"><input type="tel" name="phone" value="${escapeHtml(data.phone || '')}" placeholder="08xxxxxxxxxx" inputmode="tel" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4"><select name="otp_channel" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500"><option value="whatsapp" ${channel === 'whatsapp' ? 'selected' : ''}>WhatsApp</option><option value="sms" ${channel === 'sms' ? 'selected' : ''}>SMS</option></select></td>
             <td class="py-2.5 px-4 text-center">
                 <button type="button" class="btn-del-row inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/15 transition-colors" title="Hapus baris">${iconSvg('<path d="M18 6 6 18" /><path d="m6 6 12 12" />')}</button>
             </td>`;
@@ -370,7 +366,13 @@
     function collectBulkRows() {
         return Array.from(bulkRows.querySelectorAll('tr[data-row]')).map(tr => {
             const inputs = tr.querySelectorAll('input');
-            return { name: inputs[0].value.trim(), nis: inputs[1].value.trim(), password: inputs[2].value };
+            return {
+                name: inputs[0].value.trim(),
+                nis: inputs[1].value.trim(),
+                password: inputs[2].value,
+                phone: inputs[3].value.trim(),
+                otp_channel: tr.querySelector('select[name="otp_channel"]').value,
+            };
         });
     }
 
@@ -477,13 +479,15 @@
                 ? '<span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300 font-extrabold text-[10px]">Valid</span>'
                 : '<span class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300 font-extrabold text-[10px]">Error</span>';
             const reason = row.errors && row.errors.length
-                ? `<div class="text-[10px] text-rose-500 dark:text-rose-400 mt-1">${row.errors.join(' • ')}</div>`
+                ? `<div class="text-[10px] text-rose-500 dark:text-rose-400 mt-1">${escapeHtml(row.errors.join(' • '))}</div>`
                 : '';
             tr.innerHTML = `
                 <td class="py-3 px-4 font-bold text-slate-400 dark:text-slate-500">${index + 1}</td>
                 <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.name) || '—'}</td>
                 <td class="py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.nis) || '—'}</td>
                 <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${row.password ? '••••••' : '—'}</td>
+                <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${escapeHtml(row.phone) || '—'}</td>
+                <td class="py-3 px-4 text-slate-500 dark:text-slate-400 uppercase">${escapeHtml(row.otp_channel || 'whatsapp')}</td>
                 <td class="py-3 px-4">${chip}${reason}</td>`;
             previewRows.appendChild(tr);
         });
@@ -494,7 +498,11 @@
     btnSaveImport.addEventListener('click', async () => {
         const kelas = bulkKelas.value;
         const validRows = previewData.filter(row => row.valid).map(row => ({
-            name: row.name, nis: row.nis, password: row.password
+            name: row.name,
+            nis: row.nis,
+            password: row.password,
+            phone: row.phone,
+            otp_channel: row.otp_channel,
         }));
 
         if (!kelas) {

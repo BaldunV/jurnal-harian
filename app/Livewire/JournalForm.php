@@ -5,18 +5,121 @@ namespace App\Livewire;
 use App\Models\Journal;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class JournalForm extends Component
 {
+    use WithFileUploads;
+
     public Journal $journal;
 
     public User $user;
+
+    public $olahragaPhoto;
+
+    public $makanPhoto;
 
     public function mount(Journal $journal, User $user)
     {
         $this->journal = $journal;
         $this->user = $user;
+    }
+
+    /**
+     * Simpan foto bukti ke storage public, kolom diisi path relatif.
+     */
+    protected function storePhoto($file, string $property, string $column, string $filename): array
+    {
+        $user = auth()->user();
+        $journal = Journal::where('user_id', $user->id)
+            ->whereDate('date', $this->journal->date->toDateString())
+            ->first();
+
+        if ($journal && $journal->is_submitted) {
+            return [
+                'success' => false,
+                'is_locked' => true,
+                'message' => 'Jurnal telah disimpan permanen dan tidak dapat diubah kembali selamanya.',
+            ];
+        }
+
+        $journal ??= $this->journal;
+
+        $this->validate([
+            $property => ['nullable', 'image', 'max:5120'],
+        ], [
+            $property.'.image' => 'File harus berupa gambar.',
+            $property.'.max' => 'Ukuran foto maksimal 5 MB.',
+        ]);
+
+        $relativePath = 'journals/'.$journal->date->toDateString().'/'.$filename;
+
+        // Hapus foto lama sebelum ganti
+        if ($journal->{$column}) {
+            Storage::disk('public')->delete($journal->{$column});
+        }
+
+        $file->storeAs(dirname($relativePath), basename($relativePath), 'public');
+
+        $journal->{$column} = $relativePath;
+        $journal->save();
+
+        $this->journal = $journal;
+
+        return [
+            'success' => true,
+            'photo_url' => asset('storage/'.$relativePath),
+        ];
+    }
+
+    public function saveOlahragaPhoto()
+    {
+        return $this->storePhoto($this->olahragaPhoto, 'olahragaPhoto', 'olahraga_photo', 'olahraga.jpg');
+    }
+
+    public function saveMakanPhoto()
+    {
+        return $this->storePhoto($this->makanPhoto, 'makanPhoto', 'makan_photo', 'makan.jpg');
+    }
+
+    public function removeOlahragaPhoto()
+    {
+        return $this->removePhoto('olahraga_photo');
+    }
+
+    public function removeMakanPhoto()
+    {
+        return $this->removePhoto('makan_photo');
+    }
+
+    protected function removePhoto(string $column): array
+    {
+        $user = auth()->user();
+        $journal = Journal::where('user_id', $user->id)
+            ->whereDate('date', $this->journal->date->toDateString())
+            ->first();
+
+        if ($journal && $journal->is_submitted) {
+            return [
+                'success' => false,
+                'is_locked' => true,
+                'message' => 'Jurnal telah disimpan permanen dan tidak dapat diubah kembali selamanya.',
+            ];
+        }
+
+        $journal ??= $this->journal;
+
+        if ($journal->{$column}) {
+            Storage::disk('public')->delete($journal->{$column});
+            $journal->{$column} = null;
+            $journal->save();
+        }
+
+        $this->journal = $journal;
+
+        return ['success' => true];
     }
 
     /**

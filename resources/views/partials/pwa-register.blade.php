@@ -1,5 +1,5 @@
 {{-- ===== PWA: Service Worker registration + Install Prompt (aman di browser tanpa dukungan PWA) ===== --}}
-<script defer>
+<script defer data-navigate-once>
     (function () {
         'use strict';
 

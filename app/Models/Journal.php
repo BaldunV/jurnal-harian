@@ -19,8 +19,10 @@ class Journal extends Model
         'ibadah_details',
         'berolahraga',
         'olahraga_note',
+        'olahraga_photo',
         'makan_sehat',
         'makan_note',
+        'makan_photo',
         'gemar_belajar',
         'belajar_note',
         'bermasyarakat',
@@ -46,6 +48,11 @@ class Journal extends Model
         'is_submitted' => 'boolean',
     ];
 
+    protected $appends = [
+        'olahraga_photo_url',
+        'makan_photo_url',
+    ];
+
     public function setDateAttribute($value)
     {
         $this->attributes['date'] = Carbon::parse($value)->toDateString();
@@ -54,6 +61,16 @@ class Journal extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getOlahragaPhotoUrlAttribute()
+    {
+        return $this->olahraga_photo ? asset('storage/'.$this->olahraga_photo) : null;
+    }
+
+    public function getMakanPhotoUrlAttribute()
+    {
+        return $this->makan_photo ? asset('storage/'.$this->makan_photo) : null;
     }
 
     /**

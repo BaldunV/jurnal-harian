@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Journal;
 use App\Models\User;
+use App\Services\OtpService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class JournalController extends Controller
 {
@@ -294,11 +296,15 @@ class JournalController extends Controller
 
         $validated = $request->validate([
             'current_password' => ['required'],
-            'password' => ['required', 'min:6', 'confirmed'],
+            'password' => [
+                'required',
+                'confirmed',
+                Password::min(8)->mixedCase()->numbers()->symbols(),
+            ],
         ], [
             'current_password.required' => 'Password saat ini wajib diisi.',
-            'password.min' => 'Password baru minimal 6 karakter.',
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password.min' => 'Password baru minimal 8 karakter.',
         ]);
 
         if (! Hash::check($validated['current_password'], $user->password)) {
@@ -308,6 +314,7 @@ class JournalController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+        app(OtpService::class)->revokeTrustedDevices($user);
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');
     }

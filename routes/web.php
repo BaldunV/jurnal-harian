@@ -10,7 +10,10 @@ use Illuminate\Support\Facades\Route;
 // Auth Routes (Guest)
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1');
+    Route::get('/login/otp', [AuthController::class, 'showOtp'])->name('login.otp');
+    Route::post('/login/otp', [AuthController::class, 'verifyOtp'])->name('login.otp.verify')->middleware('throttle:10,1');
+    Route::post('/login/otp/resend', [AuthController::class, 'resendOtp'])->name('login.otp.resend')->middleware('throttle:3,1');
 });
 
 // Protected Routes (Auth Required)
@@ -45,6 +48,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/students/import/preview', [AdminStudentController::class, 'importPreview'])->name('admin.students.import.preview');
         Route::post('/admin/students/import/store', [AdminStudentController::class, 'importStore'])->name('admin.students.import.store');
         Route::get('/admin/students/template', [AdminStudentController::class, 'downloadTemplate'])->name('admin.students.template');
+        Route::patch('/admin/students/{student}', [AdminStudentController::class, 'update'])->name('admin.students.update');
     });
 
     Route::middleware('role:admin,guru')->group(function () {

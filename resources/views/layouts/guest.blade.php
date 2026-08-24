@@ -6,94 +6,6 @@
     @include('partials.pwa-meta')
     <title>@yield('title', 'Jurnal Siswa')</title>
 
-    <!-- ===== Early paint: page loader (inline, no external dependencies) ===== -->
-    <style>
-        #page-loader {
-            position: fixed;
-            inset: 0;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background-color: #f8fafc;
-            transition: opacity .5s ease;
-        }
-        .dark #page-loader { background-color: #0f172a; }
-
-        /* === Walking Character Loader === */
-        .walk-loader {
-            scale: 0.75;
-            position: relative;
-            width: 200px;
-            height: 200px;
-            translate: 10px -20px;
-        }
-        .walk-loader svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .walk-loader .head {
-            translate: 27px -30px;
-            z-index: 3;
-            animation: wl-bob 1s infinite ease-in;
-        }
-        .walk-loader .bod {
-            translate: 0 30px;
-            z-index: 3;
-            animation: wl-bob 1s infinite ease-in-out;
-        }
-        .walk-loader .legr {
-            translate: 75px 135px;
-            z-index: 0;
-            animation: wl-rstep 1s infinite ease-in;
-            animation-delay: 0.45s;
-        }
-        .walk-loader .legl {
-            translate: 30px 155px;
-            z-index: 3;
-            animation: wl-lstep 1s infinite ease-in;
-        }
-        .dark .walk-loader {
-            filter: invert(1);
-        }
-        #wl-gnd {
-            translate: -140px 0;
-            rotate: 10deg;
-            z-index: -1;
-            filter: blur(0.5px) drop-shadow(1px 3px 5px #000000);
-            opacity: 0.25;
-            animation: wl-scroll 5s infinite linear;
-        }
-        @keyframes wl-bob {
-            0% { transform: translateY(0) rotate(3deg); }
-            5% { transform: translateY(0) rotate(3deg); }
-            25% { transform: translateY(5px) rotate(0deg); }
-            50% { transform: translateY(0) rotate(-3deg); }
-            70% { transform: translateY(5px) rotate(0deg); }
-            100% { transform: translateY(0) rotate(3deg); }
-        }
-        @keyframes wl-lstep {
-            0% { transform: translateY(0) rotate(-5deg); }
-            33% { transform: translateY(-15px) translate(32px) rotate(35deg); }
-            66% { transform: translateY(0) translate(25px) rotate(-25deg); }
-            100% { transform: translateY(0) rotate(-5deg); }
-        }
-        @keyframes wl-rstep {
-            0% { transform: translateY(0) translate(0) rotate(-5deg); }
-            33% { transform: translateY(-10px) translate(30px) rotate(35deg); }
-            66% { transform: translateY(0) translate(20px) rotate(-25deg); }
-            100% { transform: translateY(0) translate(0) rotate(-5deg); }
-        }
-        @keyframes wl-scroll {
-            0% { transform: translateY(25px) translate(50px); opacity: 0; }
-            33% { opacity: 0.25; }
-            66% { opacity: 0.25; }
-            to { transform: translateY(-50px) translate(-100px); opacity: 0; }
-        }
-    </style>
-
     <!-- Google Fonts: Plus Jakarta Sans + Baloo 2 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,11 +50,6 @@
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:justify-center items-center relative overflow-x-clip">
-
-    <!-- Page Loading Overlay -->
-    <div id="page-loader" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900 transition-opacity duration-500">
-        @include('partials.walk-loader')
-    </div>
 
     <!-- Ambient Background -->
     <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
@@ -199,50 +106,8 @@
     </div>
 
     <script>
-        // Page loader helpers: auto-hide after load; showPageLoader() re-shows it
-        (function () {
-            const loader = document.getElementById('page-loader');
-            if (!loader) return;
-            window.showPageLoader = function () {
-                loader.style.display = 'flex';
-                loader.style.opacity = '1';
-            };
-            const start = Date.now();
-            function hide() {
-                const delay = Math.max(0, 3000 - (Date.now() - start));
-                setTimeout(() => {
-                    loader.style.opacity = '0';
-                    setTimeout(() => { loader.style.display = 'none'; }, 500);
-                }, delay);
-            }
-            if (document.readyState === 'complete') {
-                hide();
-            } else {
-                window.addEventListener('load', hide);
-            }
-
-            // Pengaman: jika 'load' tidak kunjung selesai (CDN/lama), paksa sembunyikan.
-            setTimeout(hide, 8000);
-
-            // Chrome (mobile/desktop) me-restore halaman dari bfcache/prerender
-            // dengan loader sudah tersembunyi. Tampilkan loader lagi sebentar.
-            window.addEventListener('pageshow', function (event) {
-                let fromCache = event.persisted;
-                if (!fromCache) {
-                    try {
-                        const nav = performance.getEntriesByType('navigation')[0];
-                        fromCache = !!(nav && nav.activationStart > 0);
-                    } catch (e) {}
-                }
-                if (!fromCache) return;
-                loader.style.display = 'flex';
-                loader.style.opacity = '1';
-                setTimeout(function () {
-                    loader.style.opacity = '0';
-                    setTimeout(function () { loader.style.display = 'none'; }, 500);
-                }, 1200);
-            });
-        })();
+        // Page loader helpers removed.
+        window.showPageLoader = function () {};
     </script>
 
     @stack('scripts')

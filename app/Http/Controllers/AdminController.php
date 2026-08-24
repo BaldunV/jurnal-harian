@@ -38,23 +38,9 @@ class AdminController extends Controller
         $monthDays = $monthStart->daysInMonth;
         $weeklyRecap = $this->buildRecap($students, $weekJournals, $weekDays);
         $monthlyRecap = $this->buildRecap($students, $monthJournals, $monthDays);
-        $monthlyRows = $monthlyRecap['rows']->keyBy(fn ($row) => $row['student']->id);
-        $studentData = $weeklyRecap['rows']->map(function ($weekRow) use ($monthlyRows) {
-            $student = $weekRow['student'];
-            $monthRow = $monthlyRows->get($student->id);
-
-            return [
-                'id' => $student->id,
-                'nis' => $student->nis,
-                'name' => $student->name,
-                'kelas' => $student->kelas,
-                'week' => collect($weekRow)->except('student')->all(),
-                'month' => collect($monthRow)->except('student')->all(),
-            ];
-        })->values();
 
         return view('admin.dashboard', compact(
-            'classList', 'students', 'weekStart', 'weekEnd', 'monthStart', 'monthEnd', 'weeklyRecap', 'monthlyRecap', 'studentData'
+            'classList', 'students', 'weekStart', 'weekEnd', 'monthStart', 'monthEnd', 'weeklyRecap', 'monthlyRecap'
         ));
     }
 

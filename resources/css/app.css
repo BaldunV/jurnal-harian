@@ -61,6 +61,397 @@
     }
 }
 
+/* ============ DASHBOARD UX PASS ============ */
+
+.app-topbar {
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 8px 24px rgba(15, 23, 42, 0.03);
+}
+
+.app-sidebar {
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+}
+
+.dark .app-sidebar {
+    box-shadow: 0 12px 32px rgba(2, 6, 23, 0.22);
+}
+
+.app-bottom-nav {
+    padding-bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.07);
+}
+
+.app-bottom-nav a {
+    min-width: 4.25rem;
+    min-height: 3rem;
+    justify-content: center;
+}
+
+.app-bottom-nav a:focus-visible,
+.admin-view-switcher a:focus-visible,
+.student-progress-link:focus-visible {
+    outline: 3px solid rgba(16, 185, 129, 0.35);
+    outline-offset: 2px;
+}
+
+.student-dashboard-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.student-dashboard-flow > .student-progress-card {
+    order: 1;
+}
+
+.student-dashboard-flow > .student-journal-section {
+    order: 2;
+}
+
+.student-dashboard-flow > .student-summary-grid {
+    order: 3;
+}
+
+.student-dashboard-flow > .student-secondary-grid {
+    order: 4;
+}
+
+.student-dashboard-flow > .student-insight-card {
+    order: 5;
+}
+
+.student-progress-card {
+    position: relative;
+    overflow: hidden;
+    border-color: rgba(16, 185, 129, 0.24);
+    box-shadow: 0 14px 32px rgba(5, 150, 105, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.dark .student-progress-card {
+    border-color: rgba(52, 211, 153, 0.25);
+    box-shadow: 0 16px 36px rgba(2, 44, 34, 0.22);
+}
+
+.student-journal-section {
+    scroll-margin-top: 5.5rem;
+}
+
+.student-journal-intro {
+    padding: 0.25rem 0.25rem 0.25rem 0.25rem;
+}
+
+.student-section-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: #047857;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.student-section-kicker::before {
+    content: '';
+    width: 1.5rem;
+    height: 0.2rem;
+    border-radius: 9999px;
+    background: #10b981;
+}
+
+.dark .student-section-kicker {
+    color: #6ee7b7;
+}
+
+.student-summary-grid .stats-card {
+    min-height: 9.5rem;
+    padding: 1.25rem;
+}
+
+.student-insight-card {
+    width: 100%;
+}
+
+.admin-hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 88% 20%, rgba(45, 212, 191, 0.22), transparent 28%),
+        linear-gradient(135deg, #064e3b 0%, #047857 52%, #0f766e 100%);
+}
+
+.admin-hero::after {
+    content: '';
+    position: absolute;
+    width: 18rem;
+    height: 18rem;
+    right: -8rem;
+    bottom: -12rem;
+    border: 1px solid rgba(167, 243, 208, 0.22);
+    border-radius: 50%;
+    box-shadow: 0 0 0 2rem rgba(167, 243, 208, 0.04), 0 0 0 4rem rgba(167, 243, 208, 0.025);
+    transform: rotate(-18deg);
+    pointer-events: none;
+}
+
+.admin-hero > * {
+    position: relative;
+    z-index: 1;
+}
+
+.admin-view-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.9rem;
+    background: rgba(6, 78, 59, 0.28);
+    backdrop-filter: blur(12px);
+}
+
+.admin-view-switcher a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-height: 2.25rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.65rem;
+    color: rgba(236, 253, 245, 0.75);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.admin-view-switcher a:hover,
+.admin-view-switcher a[aria-current='page'] {
+    color: #064e3b;
+    background: #ecfdf5;
+}
+
+.admin-kpi-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.admin-kpi {
+    position: relative;
+    min-height: 6.75rem;
+    padding: 1rem 1.1rem;
+    overflow: hidden;
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+}
+
+.admin-kpi::after {
+    content: '';
+    position: absolute;
+    width: 5rem;
+    height: 5rem;
+    right: -2.5rem;
+    bottom: -2.5rem;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.dark .admin-kpi {
+    border-color: rgba(71, 85, 105, 0.6);
+    background: rgba(30, 41, 59, 0.72);
+    box-shadow: 0 8px 22px rgba(2, 6, 23, 0.16);
+}
+
+.admin-recap-grid {
+    align-items: start;
+}
+
+.admin-recap-card {
+    min-width: 0;
+}
+
+.admin-recap-card table,
+.admin-student-table {
+    font-variant-numeric: tabular-nums;
+}
+
+.admin-student-table {
+    min-width: 0 !important;
+}
+
+@media (max-width: 767px) {
+    .app-topbar {
+        box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 6px 18px rgba(15, 23, 42, 0.03);
+    }
+
+    .student-parallax-hero {
+        min-height: 230px;
+        padding: 1.25rem !important;
+    }
+
+    .student-parallax-content {
+        gap: 1rem;
+    }
+
+    .student-summary-grid {
+        display: flex !important;
+        margin-right: -1rem;
+        padding-right: 1rem;
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+    }
+
+    .student-summary-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .student-summary-grid > .stats-card {
+        flex: 0 0 min(78vw, 15rem);
+        scroll-snap-align: start;
+    }
+
+    .student-secondary-grid .modern-card,
+    .student-progress-card {
+        padding: 1.25rem !important;
+    }
+
+    .student-progress-card > .flex.items-center.justify-between.mt-3 {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.625rem;
+    }
+
+    .student-progress-card > .flex.items-center.justify-between.mt-3 > .flex.items-center.gap-2 {
+        justify-content: space-between;
+    }
+
+    .student-progress-link {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .student-journal-intro {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .admin-kpi-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .admin-student-table,
+    .admin-student-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .admin-student-table thead {
+        display: none;
+    }
+
+    .admin-student-table tbody tr {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.25rem 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    .dark .admin-student-table tbody tr {
+        border-bottom-color: rgba(71, 85, 105, 0.6);
+    }
+
+    .admin-student-table tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-width: 0;
+        padding: 0.35rem 0;
+    }
+
+    .admin-student-table tbody td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        color: #94a3b8;
+        font-size: 0.625rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+
+    .admin-student-table tbody td[colspan] {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
+    .admin-student-table tbody td[colspan]::before {
+        content: none;
+    }
+
+    .admin-student-table tbody td[data-label='Nama'],
+    .admin-student-table tbody td[data-label='Nomor HP & OTP'],
+    .admin-student-table tbody td[data-label='Terdaftar'] {
+        grid-column: 1 / -1;
+    }
+
+    .admin-student-table tbody td[data-label='Nama'] {
+        padding-bottom: 0.6rem;
+        font-size: 0.875rem;
+    }
+
+    .admin-student-table tbody td[data-label='Nomor HP & OTP'] {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 0.75rem;
+        border-top: 1px dashed rgba(148, 163, 184, 0.35);
+    }
+
+    .admin-student-table tbody td[data-label='Nomor HP & OTP']::before {
+        align-self: flex-start;
+    }
+
+    .admin-otp-form {
+        width: 100%;
+        min-width: 0 !important;
+        flex-wrap: wrap;
+    }
+
+    .admin-otp-form input {
+        flex: 1 1 9rem;
+        width: auto !important;
+        min-width: 0;
+    }
+
+    .admin-otp-form select {
+        flex: 0 1 7rem;
+        width: auto !important;
+    }
+}
+
+@media (max-width: 639px) {
+    .student-journal-intro a {
+        align-self: stretch;
+        justify-content: center;
+        background: rgba(16, 185, 129, 0.08);
+    }
+
+    .admin-kpi {
+        min-height: 6.25rem;
+        padding: 0.875rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-view-switcher a,
+    .app-bottom-nav a {
+        transition: none !important;
+    }
+}
+
 /* ============ Auth: star orbit (7 kebiasaan) ============ */
 @keyframes orbitSpin { to { transform: rotate(360deg); } }
 .orbit-ring { animation: orbitSpin 30s linear infinite; }
@@ -1032,6 +1423,137 @@ label:hover .neon-checkbox .neon-checkbox__box {
         rgba(5, 150, 105, 0.5) 35%, 
         rgba(20, 184, 166, 0.35) 65%,
         rgba(15, 23, 42, 0.6) 100%);
+}
+
+/* Mobile PWA depth: a quiet morning orbit behind the dashboard task. */
+.student-parallax-layer--back,
+.student-parallax-layer--mid {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .student-parallax-hero {
+        isolation: isolate;
+        contain: paint;
+        min-height: 270px;
+        background-color: #065f46;
+    }
+
+    .student-parallax-hero .student-parallax-layer {
+        display: block;
+        position: absolute;
+        inset: -24% -16%;
+        pointer-events: none;
+        transform: translate3d(0, 0, 0);
+    }
+
+    .student-parallax-layer--back {
+        z-index: 0;
+        opacity: .95;
+        background:
+            radial-gradient(circle at 16% 18%, rgba(45, 212, 191, .34), transparent 31%),
+            radial-gradient(circle at 82% 80%, rgba(16, 185, 129, .28), transparent 38%),
+            linear-gradient(145deg, #064e3b 0%, #047857 46%, #0f766e 100%);
+    }
+
+    .student-parallax-layer--back::after {
+        content: '';
+        position: absolute;
+        inset: 18% 6% 4%;
+        border: 1px solid rgba(167, 243, 208, .22);
+        border-radius: 48% 52% 44% 56%;
+        transform: rotate(-11deg);
+        box-shadow:
+            0 0 0 22px rgba(167, 243, 208, .04),
+            0 0 0 44px rgba(167, 243, 208, .025);
+    }
+
+    .student-parallax-layer--mid {
+        z-index: 1;
+    }
+
+    .student-parallax-orbit,
+    .student-parallax-orb {
+        position: absolute;
+        display: block;
+        border-radius: 9999px;
+    }
+
+    .student-parallax-orbit {
+        border: 1px solid rgba(236, 253, 245, .24);
+        transform: rotate(-24deg);
+    }
+
+    .student-parallax-orbit--one {
+        width: 19rem;
+        height: 8rem;
+        top: 8%;
+        right: -12%;
+    }
+
+    .student-parallax-orbit--two {
+        width: 13rem;
+        height: 6rem;
+        bottom: 7%;
+        left: -15%;
+        transform: rotate(22deg);
+        border-color: rgba(253, 230, 138, .22);
+    }
+
+    .student-parallax-orb--sun {
+        width: 7rem;
+        height: 7rem;
+        top: -8%;
+        right: 12%;
+        background: radial-gradient(circle, rgba(253, 230, 138, .42) 0%, rgba(251, 191, 36, .12) 42%, transparent 72%);
+        filter: blur(1px);
+    }
+
+    .student-parallax-orb--mint {
+        width: 9rem;
+        height: 9rem;
+        bottom: -22%;
+        left: 18%;
+        background: radial-gradient(circle, rgba(45, 212, 191, .28), transparent 68%);
+        filter: blur(5px);
+    }
+
+    .student-parallax-orb--amber {
+        width: 3.5rem;
+        height: 3.5rem;
+        top: 42%;
+        right: 4%;
+        background: radial-gradient(circle at 35% 30%, rgba(254, 240, 138, .82), rgba(245, 158, 11, .2) 46%, transparent 72%);
+        box-shadow: 0 0 32px rgba(251, 191, 36, .2);
+    }
+
+    .student-parallax-hero .react-shader {
+        z-index: 2;
+        opacity: .38;
+        mix-blend-mode: screen;
+    }
+
+    .student-parallax-hero .mesh-background {
+        z-index: 3;
+        opacity: .72;
+    }
+
+    .student-parallax-content {
+        z-index: 10;
+    }
+
+    .student-parallax-active .student-parallax-layer {
+        will-change: transform;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .student-parallax-layer,
+    .student-parallax-hero .mesh-background,
+    .student-parallax-hero .react-shader {
+        transform: none !important;
+        will-change: auto !important;
+    }
 }
 
 @keyframes gradientShift {

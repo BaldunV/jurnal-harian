@@ -1,5 +1,5 @@
 /* ============================================================
- * Jurnal 7 Kebiasaan — Service Worker v4 (Offline Mode)
+ * Jurnal 7 Kebiasaan — Service Worker v5 (Offline Mode)
  *
  * Strategi:
  *  - Precache: shell offline + manifest + ikon (saat install).
@@ -13,7 +13,7 @@
  *    authorization, request cross-origin.
  * ============================================================ */
 
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_ASSETS = 'jurnal-assets-' + CACHE_VERSION;
 const CACHE_PAGES = 'jurnal-pages-' + CACHE_VERSION;
 const CACHE_API = 'jurnal-api-' + CACHE_VERSION;

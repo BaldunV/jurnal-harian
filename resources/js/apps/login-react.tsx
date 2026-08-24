@@ -584,6 +584,24 @@ export function ShaderBackground({ className }: { className?: string }) {
   )
 }
 
-document.querySelectorAll(".react-shader").forEach((container) => {
-  createRoot(container).render(<ShaderBackground className="absolute inset-0" />)
-})
+let shaderRoots = new Map();
+
+function mountShaders() {
+  document.querySelectorAll(".react-shader").forEach((container) => {
+    if (!shaderRoots.has(container)) {
+      shaderRoots.set(container, createRoot(container));
+    }
+    shaderRoots.get(container).render(
+      <ShaderBackground className="absolute inset-0" />,
+    );
+  });
+  for (const [container, r] of shaderRoots) {
+    if (!document.body.contains(container)) {
+      r.unmount();
+      shaderRoots.delete(container);
+    }
+  }
+}
+
+mountShaders();
+document.addEventListener("livewire:navigated", mountShaders);

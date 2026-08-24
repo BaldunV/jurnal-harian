@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\OtpService;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class AdminStudentController extends Controller
@@ -44,6 +46,7 @@ class AdminStudentController extends Controller
 
         $seen = [];
         $preview = array_map(function ($row, $index) use (&$seen) {
+            $row = $this->normalizeRow($row);
             $errors = $this->validateRow($row, $seen);
             $row['index'] = $index;
             $row['errors'] = $errors;
@@ -63,6 +66,34 @@ class AdminStudentController extends Controller
         return response()->json($this->storeStudents($kelas, $rows));
     }
 
+    public function update(Request $request, User $student)
+    {
+        abort_unless($student->role === 'siswa', 404);
+
+        $request->merge([
+            'phone' => User::normalizePhone($request->input('phone')),
+        ]);
+
+        $validated = $request->validate([
+            'phone' => ['nullable', 'regex:/^\+628[0-9]{8,12}$/'],
+            'otp_channel' => ['required', Rule::in(['whatsapp', 'sms'])],
+        ], [
+            'phone.regex' => 'Nomor HP harus menggunakan nomor seluler Indonesia yang valid.',
+            'otp_channel.in' => 'Kanal OTP harus WhatsApp atau SMS.',
+        ]);
+
+        $securityChanged = $student->phone !== ($validated['phone'] ?? null)
+            || $student->otp_channel !== $validated['otp_channel'];
+
+        $student->forceFill($validated)->save();
+
+        if ($securityChanged) {
+            app(OtpService::class)->revokeTrustedDevices($student);
+        }
+
+        return back()->with('success', 'Nomor HP dan kanal OTP siswa berhasil diperbarui.');
+    }
+
     public function downloadTemplate()
     {
         $headers = [
@@ -70,7 +101,7 @@ class AdminStudentController extends Controller
             'Content-Disposition' => 'attachment; filename="template-siswa.csv"',
         ];
 
-        $content = "\xEF\xBB\xBF"."Nama Siswa,NIS,Password\r\n";
+        $content = "\xEF\xBB\xBF"."Nama Siswa,NIS,Password,No HP,Kanal OTP\r\n";
 
         return response($content, 200, $headers);
     }
@@ -102,6 +133,8 @@ class AdminStudentController extends Controller
                 'role' => 'siswa',
                 'worship_type' => 'muslim',
                 'password' => $row['password'],
+                'phone' => $row['phone'],
+                'otp_channel' => $row['otp_channel'],
             ]);
 
             $seen[$row['nis']] = true;
@@ -136,6 +169,8 @@ class AdminStudentController extends Controller
             $name = trim((string) ($cells[0] ?? ''));
             $nis = trim((string) ($cells[1] ?? ''));
             $password = trim((string) ($cells[2] ?? ''));
+            $phone = trim((string) ($cells[3] ?? ''));
+            $otpChannel = trim((string) ($cells[4] ?? ''));
 
             if (! $seenHeader && strtolower($name) === 'nama siswa') {
                 $seenHeader = true;
@@ -152,6 +187,8 @@ class AdminStudentController extends Controller
                 'name' => $name,
                 'nis' => $nis,
                 'password' => $password,
+                'phone' => $phone,
+                'otp_channel' => $otpChannel,
             ];
         }
 
@@ -164,6 +201,8 @@ class AdminStudentController extends Controller
             'name' => trim((string) ($row['name'] ?? '')),
             'nis' => trim((string) ($row['nis'] ?? '')),
             'password' => (string) ($row['password'] ?? ''),
+            'phone' => User::normalizePhone($row['phone'] ?? null),
+            'otp_channel' => strtolower(trim((string) ($row['otp_channel'] ?? ''))) ?: 'whatsapp',
         ];
     }
 
@@ -191,6 +230,14 @@ class AdminStudentController extends Controller
             $errors[] = 'Password kosong';
         } elseif (strlen($row['password']) < 6) {
             $errors[] = 'Password minimal 6 karakter';
+        }
+
+        if (! empty($row['phone']) && ! preg_match('/^\+628[0-9]{8,12}$/', $row['phone'])) {
+            $errors[] = 'Nomor HP tidak valid (gunakan contoh 081234567890)';
+        }
+
+        if (! in_array($row['otp_channel'], ['whatsapp', 'sms'], true)) {
+            $errors[] = 'Kanal OTP harus whatsapp atau sms';
         }
 
         if ($kelas !== null && ! in_array($kelas, self::KELAS_LIST, true)) {

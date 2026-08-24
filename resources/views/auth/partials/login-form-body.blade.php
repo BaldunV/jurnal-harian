@@ -131,7 +131,7 @@
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors" id="nis-icon-wrap">
                 <span id="nis-icon">@include('partials.icon', ['name' => 'id-card', 'class' => 'w-4 h-4'])</span>
             </span>
-            <input type="text" id="nis" name="nis" value="{{ old('nis') }}" required {{ $isMobile ? '' : 'autofocus' }}
+            <input type="text" id="nis" name="nis" value="{{ old('nis') }}" required autocomplete="username" {{ $isMobile ? '' : 'autofocus' }}
                 placeholder="Contoh: 12345678"
                 class="auth-input !pl-10 !py-3.5 pr-10">
 
@@ -159,7 +159,7 @@
             <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors">
                 @include('partials.icon', ['name' => 'lock', 'class' => 'w-4 h-4'])
             </span>
-            <input type="password" id="password" name="password" required
+            <input type="password" id="password" name="password" required autocomplete="current-password"
                 placeholder="••••••••"
                 class="auth-input !pl-10 !py-3.5 !pr-11">
 
@@ -169,6 +169,7 @@
             </button>
         </div>
         @error('password')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
+        <p class="mt-1.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">Jika nomor HP akun sudah terdaftar, login akan dilanjutkan dengan verifikasi OTP.</p>
     </div>
 
     <!-- ======== REMEMBER & HELP ======== -->

@@ -74,16 +74,20 @@
 
             <div>
                 <label for="current_password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Password Saat Ini</label>
-                <input type="password" id="current_password" name="current_password" required
+                <input type="password" id="current_password" name="current_password" required autocomplete="current-password"
                     placeholder="••••••••"
                     class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
             </div>
 
             <div>
-                <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Password Baru (Min 6 Karakter)</label>
-                <input type="password" id="password" name="password" required
+                <label for="password" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Password Baru (Min 8, huruf besar-kecil, angka, simbol)</label>
+                <input type="password" id="password" name="password" required autocomplete="new-password"
                     placeholder="••••••••"
                     class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700" aria-hidden="true">
+                    <div id="password-strength-bar" class="h-full w-0 rounded-full transition-all duration-300"></div>
+                </div>
+                <p id="password-strength-text" class="mt-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">Gunakan kombinasi huruf besar, huruf kecil, angka, dan simbol.</p>
             </div>
 
             <div>
@@ -102,3 +106,38 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+    (() => {
+        const input = document.getElementById('password');
+        const bar = document.getElementById('password-strength-bar');
+        const text = document.getElementById('password-strength-text');
+        if (!input || !bar || !text) return;
+
+        input.addEventListener('input', () => {
+            const value = input.value;
+            const checks = [
+                value.length >= 8,
+                /[a-z]/.test(value),
+                /[A-Z]/.test(value),
+                /\d/.test(value),
+                /[^A-Za-z0-9]/.test(value),
+            ];
+            const score = checks.filter(Boolean).length;
+            const levels = [
+                ['w-0', 'bg-slate-300', 'Belum diisi'],
+                ['w-1/5', 'bg-rose-500', 'Sangat lemah'],
+                ['w-2/5', 'bg-amber-500', 'Perlu diperkuat'],
+                ['w-3/5', 'bg-yellow-500', 'Cukup'],
+                ['w-4/5', 'bg-teal-500', 'Kuat'],
+                ['w-full', 'bg-emerald-500', 'Sangat kuat'],
+            ];
+            const [width, color, label] = levels[score];
+            bar.className = `h-full rounded-full transition-all duration-300 ${width} ${color}`;
+            text.textContent = label + (score < 5 ? ' - lengkapi semua syarat.' : '.');
+            text.className = `mt-1 text-[10px] font-semibold ${score >= 4 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`;
+        });
+    })();
+</script>
+@endpush

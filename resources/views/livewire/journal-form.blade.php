@@ -1,3 +1,4 @@
+<div>
 <!-- Permanent Lock Status Banner Modern -->
 @if($journal->is_submitted)
     <div id="lock-banner" class="modern-card bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white p-5 flex items-center justify-between gap-4 relative overflow-hidden">
@@ -59,6 +60,7 @@
                     <div class="flex items-center gap-2">
                         <input type="checkbox" id="checkbox-bangun-pagi" name="bangun_pagi" value="1" onchange="playPressSound(this); onBangunPagiChange()" class="sr-only" {{ $journal->bangun_pagi ? 'checked' : '' }} />
                         <canvas
+                            wire:ignore
                             id="duo-lingo-canvas"
                             class="block w-24 h-24 sm:w-28 sm:h-28 select-none"
                             style="cursor: pointer; touch-action: none; -webkit-tap-highlight-color: transparent;"
@@ -278,6 +280,7 @@
                     placeholder="Opsional: Jenis olahraga (misal: Push up 20x / Jogging)"
                     class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
+            @include('partials.photo-upload', ['type' => 'olahraga'])
         </div>
 
         <!-- 4. MAKAN SEHAT DAN BERGIZI -->
@@ -321,6 +324,7 @@
                     placeholder="Opsional: Menu makan (misal: Nasi, Sayur bayam, Telur, Buah)"
                     class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
+            @include('partials.photo-upload', ['type' => 'makan'])
         </div>
 
         <!-- 5. GEMAR BELAJAR -->
@@ -477,3 +481,4 @@
         @endif
     </div>
 </form>
+</div>

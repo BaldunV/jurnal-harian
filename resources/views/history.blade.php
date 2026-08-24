@@ -45,10 +45,10 @@
         </h3>
 
         <div class="flex items-center gap-2">
-            <a href="{{ route('history', ['month' => $prevMonth->month, 'year' => $prevMonth->year]) }}" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-300 flex items-center justify-center text-sm font-bold transition-all">
+            <a href="{{ route('history', ['month' => $prevMonth->month, 'year' => $prevMonth->year]) }}" wire:navigate class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-300 flex items-center justify-center text-sm font-bold transition-all">
                 @include('partials.icon', ['name' => 'chevron-left', 'class' => 'w-4 h-4'])
             </a>
-            <a href="{{ route('history', ['month' => $nextMonth->month, 'year' => $nextMonth->year]) }}" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-300 flex items-center justify-center text-sm font-bold transition-all">
+            <a href="{{ route('history', ['month' => $nextMonth->month, 'year' => $nextMonth->year]) }}" wire:navigate class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-emerald-50 dark:hover:bg-emerald-500/20 hover:text-emerald-600 dark:hover:text-emerald-300 flex items-center justify-center text-sm font-bold transition-all">
                 @include('partials.icon', ['name' => 'chevron-right', 'class' => 'w-4 h-4'])
             </a>
         </div>
@@ -185,8 +185,8 @@ $badgeClass = 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400
             const habitList = [
                 { name: 'Bangun Pagi', status: j.bangun_pagi, icon: `@include('partials.icon', ['name' => 'sunrise', 'class' => 'w-5 h-5'])`, note: null },
                 { name: 'Beribadah', status: j.beribadah, icon: `@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-5 h-5'])`, note: formatPrayerDetails(j.ibadah_details) },
-                { name: 'Berolahraga', status: j.berolahraga, icon: `@include('partials.icon', ['name' => 'footprints', 'class' => 'w-5 h-5'])`, note: j.olahraga_note },
-                { name: 'Makan Sehat', status: j.makan_sehat, icon: `@include('partials.icon', ['name' => 'salad', 'class' => 'w-5 h-5'])`, note: j.makan_note },
+                { name: 'Berolahraga', status: j.berolahraga, icon: `@include('partials.icon', ['name' => 'footprints', 'class' => 'w-5 h-5'])`, note: j.olahraga_note, photo: j.olahraga_photo_url },
+                { name: 'Makan Sehat', status: j.makan_sehat, icon: `@include('partials.icon', ['name' => 'salad', 'class' => 'w-5 h-5'])`, note: j.makan_note, photo: j.makan_photo_url },
                 { name: 'Gemar Belajar', status: j.gemar_belajar, icon: `@include('partials.icon', ['name' => 'book-open', 'class' => 'w-5 h-5'])`, note: j.belajar_note },
                 { name: 'Bermasyarakat', status: j.bermasyarakat, icon: `@include('partials.icon', ['name' => 'handshake', 'class' => 'w-5 h-5'])`, note: j.masyarakat_note },
                 { name: 'Tidur Cepat', status: j.tidur_cepat, icon: `@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-5 h-5'])`, note: j.tidur_note },
@@ -206,6 +206,7 @@ $badgeClass = 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400
                                 </span>
                             </div>
                             ${h.note ? `<p class="text-[11px] text-slate-600 dark:text-slate-300 mt-1 italic bg-white/60 dark:bg-slate-700/60 p-2 rounded-lg border border-slate-100 dark:border-slate-600">"${h.note}"</p>` : ''}
+                            ${h.photo ? `<a href="${h.photo}" target="_blank" rel="noopener" class="mt-2 inline-block"><img src="${h.photo}" alt="Foto bukti ${h.name}" class="w-20 h-20 rounded-lg object-cover border border-slate-200 dark:border-slate-600 shadow-sm hover:opacity-90 transition-opacity"></a>` : ''}
                         </div>
                     </div>
                 `;

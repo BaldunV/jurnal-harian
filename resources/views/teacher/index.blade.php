@@ -203,11 +203,15 @@
             } else {
                 data.journals.forEach(j => {
                     const statusClass = j.is_fully_completed ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300' : (j.completed_count > 0 ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300' : 'bg-slate-100 dark:bg-slate-600 text-slate-500 dark:text-slate-300');
+                    const photos = [];
+                    if (j.olahraga_photo_url) photos.push(j.olahraga_photo_url);
+                    if (j.makan_photo_url) photos.push(j.makan_photo_url);
                     html += `
                         <div class="p-3 rounded-xl border border-slate-200/80 dark:border-slate-600 text-xs flex items-center justify-between">
                             <div>
                                 <span class="font-bold text-slate-800 dark:text-slate-100">${j.date}</span>
                                 <div class="text-[11px] text-slate-500 dark:text-slate-400">Terisi: ${j.completed_count}/7 kebiasaan</div>
+                                ${photos.length ? `<div class="flex gap-1.5 mt-1.5">${photos.map(p => `<a href="${p}" target="_blank" rel="noopener"><img src="${p}" alt="Foto bukti" class="w-10 h-10 rounded-lg object-cover border border-slate-200 dark:border-slate-600 hover:opacity-90 transition-opacity"></a>`).join('')}</div>` : ''}
                             </div>
                             <span class="px-2.5 py-1 rounded-md text-[10px] font-extrabold ${statusClass}">
                                 ${j.is_fully_completed ? '7/7 Lengkap' : j.completed_count + '/7 Terisi'}
