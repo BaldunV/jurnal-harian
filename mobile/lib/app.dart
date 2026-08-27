@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/theme/app_theme.dart';
 import 'providers/session_provider.dart';
+import 'screens/auth/auth_flow_screen.dart';
+import 'screens/auth/session_recovery_screen.dart';
 import 'screens/foundation/foundation_screen.dart';
+import 'screens/home/app_shell.dart';
 
 class JurnalApp extends ConsumerWidget {
   const JurnalApp({super.key});
@@ -29,15 +32,13 @@ class _AppBootstrap extends ConsumerWidget {
     final session = ref.watch(sessionControllerProvider);
 
     return session.when(
-      data: (status) => FoundationScreen(
-        state: status == SessionStatus.signedIn
-            ? FoundationState.sessionReady
-            : FoundationState.signedOut,
-      ),
-      error: (error, stackTrace) => FoundationScreen(
-        state: FoundationState.storageError,
-        onRetry: () => ref.invalidate(sessionControllerProvider),
-      ),
+      data: (state) => switch (state) {
+        SignedOutSession(:final notice) => AuthFlowScreen(
+          sessionNotice: notice,
+        ),
+        AuthenticatedSession(:final student) => AppShell(student: student),
+      },
+      error: (error, stackTrace) => SessionRecoveryScreen(error: error),
       loading: () => const FoundationScreen(state: FoundationState.loading),
     );
   }
