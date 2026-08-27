@@ -12,9 +12,7 @@ use Throwable;
 
 class AuthController extends Controller
 {
-    public function __construct(private readonly OtpService $otp)
-    {
-    }
+    public function __construct(private readonly OtpService $otp) {}
 
     public function showLogin()
     {

@@ -315,6 +315,7 @@ class JournalController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
         app(OtpService::class)->revokeTrustedDevices($user);
+        $user->tokens()->delete();
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');
     }

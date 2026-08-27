@@ -3,9 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Models\Journal;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
@@ -22,7 +21,7 @@ class TeacherController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('nis', 'like', "%{$search}%");
+                    ->orWhere('nis', 'like', "%{$search}%");
             });
         }
 
@@ -40,7 +39,7 @@ class TeacherController extends Controller
 
         foreach ($students as $student) {
             $todayJournal = $student->journals->first();
-            if (!$todayJournal) {
+            if (! $todayJournal) {
                 $emptyToday++;
             } elseif ($todayJournal->is_fully_completed) {
                 $completedToday++;

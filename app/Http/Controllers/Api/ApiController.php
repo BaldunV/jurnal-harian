@@ -12,8 +12,9 @@ abstract class ApiController extends Controller
         mixed $data = null,
         string $message = 'Permintaan berhasil.',
         int $status = 200,
+        array $meta = [],
     ): JsonResponse {
-        return ApiResponse::success($data, $message, $status);
+        return ApiResponse::success($data, $message, $status, $meta);
     }
 
     protected function error(

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Exceptions\ApiException;
 use App\Support\ApiResponse;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,26 +19,48 @@ class HandleApiExceptions
     {
         try {
             return $next($request);
-        } catch (ValidationException $exception) {
+        } catch (Throwable $exception) {
+            return $this->render($exception);
+        }
+    }
+
+    public function render(Throwable $exception): Response
+    {
+        if ($exception instanceof ApiException) {
+            return ApiResponse::error(
+                $exception->getMessage(),
+                $exception->status,
+                $exception->errors,
+                $exception->errorCode,
+            );
+        }
+
+        if ($exception instanceof ValidationException) {
             return ApiResponse::error(
                 'Data tidak valid.',
                 422,
                 $exception->errors(),
                 'validation_error',
             );
-        } catch (AuthenticationException) {
+        }
+
+        if ($exception instanceof AuthenticationException) {
             return ApiResponse::error(
                 'Token tidak valid atau sudah kedaluwarsa.',
                 401,
                 code: 'unauthenticated',
             );
-        } catch (AuthorizationException) {
+        }
+
+        if ($exception instanceof AuthorizationException) {
             return ApiResponse::error(
                 'Anda tidak memiliki izin untuk mengakses data ini.',
                 403,
                 code: 'forbidden',
             );
-        } catch (HttpExceptionInterface $exception) {
+        }
+
+        if ($exception instanceof HttpExceptionInterface) {
             $status = $exception->getStatusCode();
             $message = match ($status) {
                 403 => 'Anda tidak memiliki izin untuk mengakses data ini.',
@@ -57,14 +80,14 @@ class HandleApiExceptions
                 },
                 headers: $exception->getHeaders(),
             );
-        } catch (Throwable $exception) {
-            report($exception);
-
-            return ApiResponse::error(
-                'Terjadi kesalahan pada server.',
-                500,
-                code: 'server_error',
-            );
         }
+
+        report($exception);
+
+        return ApiResponse::error(
+            'Terjadi kesalahan pada server.',
+            500,
+            code: 'server_error',
+        );
     }
 }

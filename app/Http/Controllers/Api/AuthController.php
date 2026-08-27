@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Throwable;
 
@@ -17,9 +18,7 @@ class AuthController extends ApiController
 {
     private const CHALLENGE_PURPOSE = 'mobile-login';
 
-    public function __construct(private readonly OtpService $otp)
-    {
-    }
+    public function __construct(private readonly OtpService $otp) {}
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -219,6 +218,7 @@ class AuthController extends ApiController
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()?->delete();
+        Auth::guard('sanctum')->forgetUser();
 
         return $this->success(message: 'Logout berhasil.');
     }

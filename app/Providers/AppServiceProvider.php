@@ -5,8 +5,8 @@ namespace App\Providers;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,7 +28,7 @@ class AppServiceProvider extends ServiceProvider
 
             return [
                 Limit::perMinute(10)->by('mobile-login-ip|'.$request->ip()),
-                Limit::perMinute(5)->by('mobile-login-account|'.$request->ip().'|'.$nis),
+                Limit::perMinute(5)->by('mobile-login-account|'.$nis),
             ];
         });
 
@@ -37,13 +37,13 @@ class AppServiceProvider extends ServiceProvider
 
             return [
                 Limit::perMinute(10)->by('mobile-otp-ip|'.$request->ip()),
-                Limit::perMinute(5)->by('mobile-otp-challenge|'.$request->ip().'|'.$challenge),
+                Limit::perMinute(5)->by('mobile-otp-challenge|'.$challenge),
             ];
         });
 
         RateLimiter::for('mobile-otp-resend', function (Request $request): Limit {
             return Limit::perMinute(3)->by(
-                'mobile-otp-resend|'.$request->ip().'|'.(string) $request->input('challenge_id'),
+                'mobile-otp-resend|'.(string) $request->input('challenge_id'),
             );
         });
 

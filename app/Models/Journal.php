@@ -79,9 +79,11 @@ class Journal extends Model
     public function isBangunPagiTimeValid(): bool
     {
         $time = $this->bangun_pagi_time;
-        if (! $time) {
+        if (! $time || ! preg_match('/^(\d{2}):(\d{2})/', $time, $matches)) {
             return false;
         }
+
+        $time = $matches[1].':'.$matches[2];
 
         return $time >= '03:00' && $time <= '10:00';
     }
@@ -108,24 +110,22 @@ class Journal extends Model
     /**
      * Re-calculate completed_count and is_fully_completed before saving
      */
-    public function recalculateProgress()
+    public function qualifiedHabits(): array
     {
-        $habits = [
-            $this->bangun_pagi && $this->isBangunPagiTimeValid(),
-            $this->beribadah,
-            $this->berolahraga,
-            $this->makan_sehat,
-            $this->gemar_belajar,
-            $this->bermasyarakat,
-            $this->tidur_cepat && $this->isTidurCepatTimeValid(),
+        return [
+            'bangun_pagi' => $this->bangun_pagi && $this->isBangunPagiTimeValid(),
+            'beribadah' => $this->beribadah,
+            'berolahraga' => $this->berolahraga,
+            'makan_sehat' => $this->makan_sehat,
+            'gemar_belajar' => $this->gemar_belajar,
+            'bermasyarakat' => $this->bermasyarakat,
+            'tidur_cepat' => $this->tidur_cepat && $this->isTidurCepatTimeValid(),
         ];
+    }
 
-        $completed = 0;
-        foreach ($habits as $h) {
-            if ($h) {
-                $completed++;
-            }
-        }
+    public function recalculateProgress(): void
+    {
+        $completed = count(array_filter($this->qualifiedHabits()));
 
         $this->completed_count = $completed;
         $this->is_fully_completed = ($completed === 7);

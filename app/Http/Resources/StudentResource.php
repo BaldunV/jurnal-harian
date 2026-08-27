@@ -16,6 +16,9 @@ class StudentResource extends JsonResource
             'class' => $this->kelas,
             'role' => $this->role,
             'worship_type' => $this->worship_type,
+            'profile_photo_url' => $this->profile_photo
+                ? route('api.me.profile.photo.show')
+                : null,
         ];
     }
 }

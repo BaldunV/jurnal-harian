@@ -10,12 +10,19 @@ final class ApiResponse
         mixed $data = null,
         string $message = 'Permintaan berhasil.',
         int $status = 200,
+        array $meta = [],
     ): JsonResponse {
-        return response()->json([
+        $payload = [
             'success' => true,
             'message' => $message,
             'data' => $data ?? (object) [],
-        ], $status);
+        ];
+
+        if ($meta !== []) {
+            $payload['meta'] = $meta;
+        }
+
+        return response()->json($payload, $status);
     }
 
     public static function error(

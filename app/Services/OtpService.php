@@ -16,9 +16,7 @@ class OtpService
 
     public const TRUSTED_DEVICE_COOKIE = 'otp_trusted_device';
 
-    public function __construct(private readonly OtpDeliveryService $delivery)
-    {
-    }
+    public function __construct(private readonly OtpDeliveryService $delivery) {}
 
     public function createChallenge(
         User $user,
@@ -297,8 +295,7 @@ class OtpService
         $expiresAt,
         string $purpose,
         array $context,
-    ): array
-    {
+    ): array {
         return [
             'user_id' => $user->id,
             'channel' => $channel,
