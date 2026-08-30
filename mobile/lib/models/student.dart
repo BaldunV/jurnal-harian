@@ -28,4 +28,24 @@ class Student {
   final String role;
   final String worshipType;
   final String? profilePhotoUrl;
+
+  Student copyWith({
+    int? id,
+    String? nis,
+    String? name,
+    String? className,
+    String? role,
+    String? worshipType,
+    String? profilePhotoUrl,
+  }) {
+    return Student(
+      id: id ?? this.id,
+      nis: nis ?? this.nis,
+      name: name ?? this.name,
+      className: className ?? this.className,
+      role: role ?? this.role,
+      worshipType: worshipType ?? this.worshipType,
+      profilePhotoUrl: profilePhotoUrl ?? this.profilePhotoUrl,
+    );
+  }
 }

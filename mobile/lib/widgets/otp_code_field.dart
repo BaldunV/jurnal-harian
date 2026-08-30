@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/theme/design_tokens.dart';
+
 class OtpCodeField extends StatefulWidget {
   const OtpCodeField({
     required this.controller,
@@ -62,6 +64,8 @@ class _OtpCodeFieldState extends State<OtpCodeField> {
     final code = widget.controller.text;
     final colors = Theme.of(context).colorScheme;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Semantics(
       label: 'Kode OTP enam digit',
       value: '${code.length} dari 6 digit terisi',
@@ -73,15 +77,36 @@ class _OtpCodeFieldState extends State<OtpCodeField> {
             ExcludeSemantics(
               child: Row(
                 children: List<Widget>.generate(6, (index) {
+                  final filled = index < code.length;
                   final isCurrent =
                       widget.focusNode.hasFocus &&
                       code.length < 6 &&
                       index == code.length;
-                  final borderColor = widget.hasError
-                      ? colors.error
-                      : isCurrent
-                      ? colors.primary
-                      : colors.outlineVariant;
+
+                  final borderColor = switch ((
+                    widget.hasError,
+                    isCurrent,
+                    filled,
+                  )) {
+                    (true, _, _) => AppColors.error,
+                    (_, true, _) || (_, _, true) => AppColors.primary600,
+                    _ =>
+                      isDark
+                          ? const Color(0xFF334155)
+                          : const Color(0xFFE2E8F0),
+                  };
+
+                  final fillColor = switch ((widget.hasError, filled, isDark)) {
+                    (true, _, _) => AppColors.error.withValues(alpha: 0.06),
+                    (_, true, true) => AppColors.primary500.withValues(
+                      alpha: 0.20,
+                    ),
+                    (_, true, false) => AppColors.primary500.withValues(
+                      alpha: 0.12,
+                    ),
+                    (_, _, true) => const Color(0xFF0F172A),
+                    (_, _, false) => Colors.white,
+                  };
 
                   return Expanded(
                     child: Padding(
@@ -92,16 +117,27 @@ class _OtpCodeFieldState extends State<OtpCodeField> {
                             : const Duration(milliseconds: 160),
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: colors.surfaceContainerLow,
-                          borderRadius: BorderRadius.circular(12),
+                          color: fillColor,
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                           border: Border.all(
                             color: borderColor,
-                            width: isCurrent || widget.hasError ? 2 : 1,
+                            width: isCurrent || widget.hasError || filled
+                                ? 2
+                                : 1,
                           ),
+                          boxShadow: isCurrent
+                              ? AppShadows.glow(context)
+                              : null,
                         ),
                         child: Text(
                           index < code.length ? code[index] : '',
-                          style: Theme.of(context).textTheme.headlineSmall,
+                          style: Theme.of(context).textTheme.headlineSmall
+                              ?.copyWith(
+                                color: widget.hasError
+                                    ? AppColors.error
+                                    : colors.onSurface,
+                                fontWeight: FontWeight.w700,
+                              ),
                         ),
                       ),
                     ),

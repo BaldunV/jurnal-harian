@@ -23,7 +23,10 @@ class AuthController extends ApiController
     public function login(LoginRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $user = User::query()->where('nis', $validated['nis'])->first();
+
+        $user = User::query()
+            ->where('nis', $validated['nis'])
+            ->first();
 
         if (! $user || ! Hash::check($validated['password'], $user->password)) {
             return $this->error(
@@ -54,8 +57,11 @@ class AuthController extends ApiController
                 $user,
                 $user->otp_channel,
                 self::CHALLENGE_PURPOSE,
-                ['device_name' => $validated['device_name']],
+                [
+                    'device_name' => $validated['device_name'],
+                ],
             );
+
         } catch (Throwable $exception) {
             report($exception);
 
@@ -70,7 +76,9 @@ class AuthController extends ApiController
             'otp_required' => true,
             'challenge_id' => $challenge['id'],
             'channel' => $challenge['channel'],
-            'channel_label' => $this->otp->channelLabel($challenge['channel']),
+            'channel_label' => $this->otp->channelLabel(
+                $challenge['channel']
+            ),
             'masked_phone' => $this->otp->maskPhone($user->phone),
             'sent_at' => $challenge['sent_at'],
             'resend_at' => $challenge['resend_at'],
@@ -81,6 +89,7 @@ class AuthController extends ApiController
     public function verifyOtp(VerifyOtpRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
         $subject = $this->otp->resolveChallenge(
             $validated['challenge_id'],
             self::CHALLENGE_PURPOSE,
@@ -101,6 +110,7 @@ class AuthController extends ApiController
                 $validated['code'],
                 self::CHALLENGE_PURPOSE,
             );
+
         } catch (Throwable $exception) {
             report($exception);
 
@@ -115,7 +125,11 @@ class AuthController extends ApiController
             return $this->error(
                 'Kode OTP salah. Sisa percobaan: '.$result['remaining'].'.',
                 422,
-                ['code' => ['Kode OTP tidak valid.']],
+                [
+                    'code' => [
+                        'Kode OTP tidak valid.',
+                    ],
+                ],
                 'otp_invalid',
             );
         }
@@ -137,6 +151,7 @@ class AuthController extends ApiController
         }
 
         $user = $subject['user']->fresh();
+
         if (! $user || $user->role !== 'siswa') {
             return $this->error(
                 'Akun tidak diizinkan menggunakan aplikasi mobile.',
@@ -145,9 +160,23 @@ class AuthController extends ApiController
             );
         }
 
-        $expiresAt = now()->addDays((int) config('sanctum.mobile_token_expiration_days', 30));
-        $deviceName = (string) ($subject['context']['device_name'] ?? 'Flutter');
-        $token = $user->createToken($deviceName, ['student'], $expiresAt);
+        $expiresAt = now()->addDays(
+            (int) config(
+                'sanctum.mobile_token_expiration_days',
+                30
+            )
+        );
+
+        $deviceName = (string) (
+            $subject['context']['device_name']
+            ?? 'Flutter'
+        );
+
+        $token = $user->createToken(
+            $deviceName,
+            ['student'],
+            $expiresAt
+        );
 
         return $this->success([
             'token' => $token->plainTextToken,
@@ -160,7 +189,11 @@ class AuthController extends ApiController
     public function resendOtp(ResendOtpRequest $request): JsonResponse
     {
         $challengeId = $request->validated('challenge_id');
-        $subject = $this->otp->resolveChallenge($challengeId, self::CHALLENGE_PURPOSE);
+
+        $subject = $this->otp->resolveChallenge(
+            $challengeId,
+            self::CHALLENGE_PURPOSE
+        );
 
         if (! $subject) {
             return $this->error(
@@ -188,7 +221,8 @@ class AuthController extends ApiController
 
         if ($result['status'] === 'throttled') {
             return $this->error(
-                'Tunggu '.$result['retry_after'].' detik sebelum meminta kode baru.',
+                'Tunggu '.$result['retry_after'].
+                ' detik sebelum meminta kode baru.',
                 429,
                 code: 'otp_resend_throttled',
             );
@@ -212,14 +246,21 @@ class AuthController extends ApiController
 
     public function me(Request $request): JsonResponse
     {
-        return $this->success(new StudentResource($request->user()));
+        return $this->success(
+            new StudentResource($request->user())
+        );
     }
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()?->delete();
+        $request->user()
+            ->currentAccessToken()
+            ?->delete();
+
         Auth::guard('sanctum')->forgetUser();
 
-        return $this->success(message: 'Logout berhasil.');
+        return $this->success(
+            message: 'Logout berhasil.'
+        );
     }
 }

@@ -70,10 +70,10 @@ class AuthController extends Controller
         RateLimiter::clear($throttleKey);
         $remember = $request->boolean('remember');
 
-        // Accounts created before OTP phone setup can still enter and configure a phone number.
-        if (! $user->phone || $this->otp->hasTrustedDevice($user, $request)) {
-            return $this->finishLogin($request, $user, $remember)
-                ->with('success', 'Login berhasil. Selamat datang kembali!');
+        if (! $user->phone) {
+            return back()->withErrors([
+                'nis' => 'Nomor HP belum terdaftar. Hubungi administrator untuk mengaktifkan OTP.',
+            ])->onlyInput('nis', 'login_as');
         }
 
         try {

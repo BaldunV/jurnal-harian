@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod/misc.dart' show Override;
 import 'package:jurnal_siswa/providers/api_client_provider.dart';
 import 'package:jurnal_siswa/providers/auth_invalidation_provider.dart';
 import 'package:jurnal_siswa/providers/core_providers.dart';
@@ -9,6 +10,7 @@ import 'memory_token_storage.dart';
 ProviderContainer createAuthProviderContainer({
   required FakeHttpClientAdapter adapter,
   required MemoryTokenStorage tokenStorage,
+  List<Override> additionalOverrides = const <Override>[],
 }) {
   return ProviderContainer(
     overrides: [
@@ -24,6 +26,7 @@ ProviderContainer createAuthProviderContainer({
         ref.onDispose(client.close);
         return client;
       }),
+      ...additionalOverrides,
     ],
   );
 }

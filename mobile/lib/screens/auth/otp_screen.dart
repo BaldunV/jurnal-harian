@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../providers/auth_flow_provider.dart';
+import '../../providers/interaction_feedback_provider.dart';
 import '../../widgets/auth_scaffold.dart';
+import '../../widgets/buttons.dart';
 import '../../widgets/otp_code_field.dart';
 import '../../widgets/status_message.dart';
 
@@ -94,7 +96,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                     ?.copyWith(color: Theme.of(context).colorScheme.error),
               ),
             ],
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Icon(
@@ -114,24 +116,16 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               ],
             ),
             const SizedBox(height: 24),
-            FilledButton(
+            GradientButton(
               key: const Key('otp_verify_button'),
-              onPressed:
-                  interactionLocked ||
-                      auth.challengeEnded ||
-                      isExpired ||
-                      _codeController.text.length != 6
-                  ? null
-                  : _verify,
-              child: auth.isSubmitting
-                  ? const SizedBox.square(
-                      dimension: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        semanticsLabel: 'Memverifikasi OTP',
-                      ),
-                    )
-                  : const Text('Verifikasi OTP'),
+              label: 'Verifikasi OTP',
+              enabled:
+                  !interactionLocked &&
+                  !auth.challengeEnded &&
+                  !isExpired &&
+                  _codeController.text.length == 6,
+              isLoading: auth.isSubmitting,
+              onPressed: _verify,
             ),
             const SizedBox(height: 12),
             if (auth.challengeEnded || isExpired)
@@ -191,6 +185,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       return;
     }
 
+    unawaited(ref.read(interactionFeedbackProvider).buttonPress());
     FocusManager.instance.primaryFocus?.unfocus();
     final succeeded = await ref
         .read(authFlowControllerProvider.notifier)
@@ -206,6 +201,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   }
 
   Future<void> _resend() async {
+    unawaited(ref.read(interactionFeedbackProvider).buttonPress());
     final succeeded = await ref
         .read(authFlowControllerProvider.notifier)
         .resendOtp();

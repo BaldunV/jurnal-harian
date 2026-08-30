@@ -118,6 +118,14 @@ class SessionController extends AsyncNotifier<SessionState> {
     }
   }
 
+  /// Updates the locally held student after an in-place profile change without
+  /// re-validating the token.
+  void updateStudent(Student student) {
+    if (state.value is AuthenticatedSession) {
+      state = AsyncData<SessionState>(AuthenticatedSession(student));
+    }
+  }
+
   Future<SessionState> _restore() async {
     final token = await ref.read(tokenStorageProvider).readToken();
     if (token == null || token.isEmpty) {

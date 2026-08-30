@@ -5,6 +5,9 @@ import 'package:jurnal_siswa/app.dart';
 import 'package:jurnal_siswa/screens/auth/login_screen.dart';
 import 'package:jurnal_siswa/screens/auth/otp_screen.dart';
 
+import 'package:jurnal_siswa/providers/journal_controller.dart';
+import 'package:jurnal_siswa/providers/statistics_controller.dart';
+
 import '../../helpers/auth_provider_container.dart';
 import '../../helpers/auth_test_data.dart';
 import '../../helpers/fake_http_client_adapter.dart';
@@ -110,7 +113,8 @@ void main() {
     final verify = find.byKey(const Key('otp_verify_button'));
     await tester.ensureVisible(verify);
     await tester.tap(verify);
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
 
     expect(storage.token, '12|plain-token');
     expect(find.byKey(const Key('authenticated_app_shell')), findsOneWidget);
@@ -129,8 +133,8 @@ void main() {
     );
 
     expect(find.byKey(const Key('authenticated_app_shell')), findsOneWidget);
-    expect(find.text('Beranda'), findsWidgets);
     expect(find.text('Jurnal'), findsOneWidget);
+    expect(find.text('Riwayat'), findsOneWidget);
     expect(find.text('Statistik'), findsOneWidget);
     expect(find.text('Profil'), findsOneWidget);
     expect(find.byType(LoginScreen), findsNothing);
@@ -159,12 +163,17 @@ Future<void> _pumpApp(
   final container = createAuthProviderContainer(
     adapter: adapter,
     tokenStorage: storage,
+    additionalOverrides: [
+      journalControllerProvider.overrideWith(_TestJournalController.new),
+      statisticsControllerProvider.overrideWith(_TestStatisticsController.new),
+    ],
   );
   addTearDown(container.dispose);
   await tester.pumpWidget(
     UncontrolledProviderScope(container: container, child: const JurnalApp()),
   );
-  await tester.pumpAndSettle();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 800));
 }
 
 Future<void> _fillAndSubmitLogin(WidgetTester tester) async {
@@ -177,4 +186,18 @@ Future<void> _fillAndSubmitLogin(WidgetTester tester) async {
   await tester.ensureVisible(submit);
   await tester.tap(submit);
   await tester.pumpAndSettle();
+}
+
+class _TestJournalController extends JournalController {
+  @override
+  JournalState build() {
+    return const JournalState();
+  }
+}
+
+class _TestStatisticsController extends StatisticsController {
+  @override
+  StatisticsState build() {
+    return const StatisticsState();
+  }
 }

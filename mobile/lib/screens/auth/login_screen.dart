@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 
 import '../../providers/auth_flow_provider.dart';
+import '../../providers/interaction_feedback_provider.dart';
 import '../../providers/session_provider.dart';
 import '../../widgets/auth_scaffold.dart';
+import '../../widgets/buttons.dart';
 import '../../widgets/status_message.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -43,6 +49,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return AuthScaffold(
       title: 'Masuk ke jurnalmu',
       description: 'Gunakan NIS dan password akun sekolah. Setelah datamu cocok, kami akan mengirim kode OTP.',
+      background: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFF0FDFA), Color(0xFFFFFFFF)],
+          ),
+        ),
+      ),
       child: AutofillGroup(
         child: Form(
           key: _formKey,
@@ -83,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: const InputDecoration(
                   labelText: 'NIS',
                   hintText: 'Masukkan NIS',
-                  prefixIcon: Icon(Icons.badge_outlined),
+                  prefixIcon: Icon(LucideIcons.badgeCheck),
                 ),
                 validator: _validateNis,
                 onChanged: _onFieldChanged,
@@ -104,7 +119,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 decoration: InputDecoration(
                   labelText: 'Password',
                   hintText: 'Masukkan password',
-                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  prefixIcon: const Icon(LucideIcons.lock),
                   suffixIcon: IconButton(
                     onPressed: auth.isSubmitting
                         ? null
@@ -115,9 +130,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ? 'Tampilkan password'
                         : 'Sembunyikan password',
                     icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined,
+                      _obscurePassword ? LucideIcons.eye : LucideIcons.eyeOff,
                     ),
                   ),
                 ),
@@ -126,25 +139,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onFieldSubmitted: (_) => _submit(),
               ),
               const SizedBox(height: 24),
-              FilledButton(
+              GradientButton(
                 key: const Key('login_submit_button'),
-                onPressed: auth.isSubmitting ? null : _submit,
-                child: auth.isSubmitting
-                    ? const SizedBox.square(
-                        dimension: 22,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          semanticsLabel: 'Sedang masuk',
-                        ),
-                      )
-                    : const Text('Lanjutkan'),
+                label: 'Lanjutkan',
+                enabled: !auth.isSubmitting,
+                isLoading: auth.isSubmitting,
+                onPressed: _submit,
               ),
               const SizedBox(height: 22),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(
-                    Icons.verified_user_outlined,
+                    LucideIcons.shieldCheck,
                     size: 20,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -156,6 +163,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+              Center(
+                child: SizedBox(
+                  width: 34,
+                  height: 34,
+                  child: Icon(
+                    LucideIcons.chevronUp,
+                    size: 24,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
             ],
           ),
@@ -202,6 +221,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
+    unawaited(ref.read(interactionFeedbackProvider).buttonPress());
     setState(() => _submitted = true);
     if (!_formKey.currentState!.validate()) {
       return;

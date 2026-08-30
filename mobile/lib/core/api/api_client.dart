@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 
@@ -51,6 +52,51 @@ class ApiClient {
 
   Future<JsonMap> put(String path, {Object? data}) {
     return _request(() => _dio.put<Object?>(path, data: data));
+  }
+
+  /// Uploads a file via multipart/form-data and parses the JSON envelope.
+  Future<JsonMap> uploadFile(
+    String path,
+    String fileField,
+    String filePath, {
+    String? filename,
+    Map<String, Object?>? extra,
+  }) {
+    return _request(() async {
+      final formData = FormData.fromMap(<String, Object?>{
+        fileField: await MultipartFile.fromFile(filePath, filename: filename),
+        ...?extra,
+      });
+      return _dio.post<Object?>(path, data: formData);
+    });
+  }
+
+  /// Downloads raw bytes (e.g. a journal/profile photo) using an absolute URL.
+  /// Throws [ApiException] on a non-success status.
+  Future<Uint8List> getBytes(String url) async {
+    try {
+      final response = await _dio.get<Uint8List>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+      final payload = response.data;
+      if (payload == null) {
+        throw const ApiException(
+          kind: ApiFailureKind.server,
+          message: 'Berkas tidak dapat diunduh.',
+        );
+      }
+      return payload;
+    } on DioException catch (error) {
+      throw ApiException.fromDio(error);
+    } on ApiException {
+      rethrow;
+    } on Object {
+      throw const ApiException(
+        kind: ApiFailureKind.unknown,
+        message: 'Berkas tidak dapat diunduh.',
+      );
+    }
   }
 
   Future<JsonMap> _request(Future<Response<Object?>> Function() send) async {

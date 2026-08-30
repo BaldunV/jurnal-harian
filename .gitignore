@@ -25,3 +25,16 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Flutter generated files
+/mobile/build/
+/mobile/.dart_tool/
+/mobile/android/build/
+/mobile/android/.gradle/
+*.apk
+*.aab
