@@ -70,10 +70,19 @@ class AuthController extends Controller
         RateLimiter::clear($throttleKey);
         $remember = $request->boolean('remember');
 
+        if ($user->role === 'admin') {
+            return $this->finishLogin($request, $user, $remember)
+                ->with('success', 'Login admin berhasil.');
+        }
+
+        // Pertahankan akses akun lama yang belum memiliki nomor HP.
         if (! $user->phone) {
-            return back()->withErrors([
-                'nis' => 'Nomor HP belum terdaftar. Hubungi administrator untuk mengaktifkan OTP.',
-            ])->onlyInput('nis', 'login_as');
+            return $this->finishLogin($request, $user, $remember);
+        }
+
+        // Perangkat yang sudah pernah diverifikasi tidak perlu OTP lagi.
+        if ($this->otp->hasTrustedDevice($user, $request)) {
+            return $this->finishLogin($request, $user, $remember);
         }
 
         try {
