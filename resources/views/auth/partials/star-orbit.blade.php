@@ -10,7 +10,7 @@
     </div>
     <div class="absolute inset-0 flex items-center justify-center">
         <div class="w-[76px] h-[76px] rounded-[22px] bg-white dark:bg-slate-800 shadow-xl shadow-emerald-900/10 dark:shadow-black/50 border border-slate-100 dark:border-slate-700 p-1.5 flex items-center justify-center bintang-float">
-            <img src="{{ asset('images/logo-login.png') }}" alt="Logo SMK BPPI" class="w-full h-full object-contain">
+            <img src="{{ asset('images/logo-login.webp') }}" width="96" height="93" alt="Logo SMK BPPI" class="w-full h-full object-contain">
         </div>
     </div>
 </div>

@@ -77,20 +77,10 @@
         50%      { transform: translateY(-4px); opacity: 1; }
     }
     .sheet-hint-bounce { animation: sheetHintBounce 1.6s ease-in-out infinite; }
-
-    /* ==========================================
-       Performance optimization - Mobile
-       ========================================== */
-    @media (max-width: 767px) {
-        /* Tes #1: hanya matikan backdrop blur */
-        .backdrop-blur-xl {
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-    }
 </style>
 
 @push('scripts')
+<script src="{{ asset('js/rive.min.js') }}"></script>
 <script>
     // ==========================================
     // Rive Canvas Integration (Snake & Scroll hint)
@@ -102,27 +92,6 @@
             if (typeof console !== 'undefined') {
                 console.log.apply(console, ['[RiveLogin]'].concat(Array.prototype.slice.call(arguments)));
             }
-        }
-
-        function loadRiveLibrary(callback) {
-            if (typeof rive !== 'undefined') {
-                callback();
-                return;
-            }
-
-            var script = document.createElement('script');
-            script.src = '{{ asset('js/rive.min.js') }}';
-            script.async = true;
-
-            script.onload = function () {
-                callback();
-            };
-
-            script.onerror = function () {
-                console.warn('[RiveLogin] Rive gagal dimuat.');
-            };
-
-            document.body.appendChild(script);
         }
 
         // Tunggu DOM ready dan Rive library siap
@@ -144,40 +113,32 @@
                 alignment: rive.Alignment.center
             });
 
-            var isDesktop = window.matchMedia(
-                '(min-width: 768px)'
-            ).matches;
-
-            var targets = [];
-
-            if (isDesktop) {
-                targets.push({
+            var targets = [
+                {
                     id: 'snake-rive',
                     src: '{{ asset('rive/cloudy-walk.riv') }}',
                     layout: coverLayout,
                     autoplay: true,
                     interactive: true,
                     watchdog: true
-                });
-            } else {
-                targets.push({
+                },
+                {
                     id: 'snake-rive-mobile',
                     src: '{{ asset('rive/cloudy-walk.riv') }}',
                     layout: coverLayout,
                     autoplay: true,
                     interactive: false,
                     watchdog: true
-                });
-
-                targets.push({
+                },
+                {
                     id: 'scroll-hint-rive',
                     src: '{{ asset('rive/scroll-down-indicator.riv') }}',
                     layout: coverLayout,
                     autoplay: true,
                     interactive: false,
                     watchdog: false
-                });
-            }
+                }
+            ];
 
             targets.forEach(function (target) {
                 var canvas = document.getElementById(target.id);
@@ -544,62 +505,10 @@
             }
         }
 
-        function startRiveLater() {
-            const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-            let started = false;
-
-            const start = function () {
-                if (started) return;
-                started = true;
-
-                window.removeEventListener('pointerdown', startMobile);
-                window.removeEventListener('scroll', startMobile);
-                window.removeEventListener('keydown', startMobile);
-
-                loadRiveLibrary(initWhenReady);
-            };
-
-            const startMobile = function () {
-                start();
-            };
-
-            if (isDesktop) {
-                // Desktop: tetap lazy-load saat browser sedang idle
-                if ('requestIdleCallback' in window) {
-                    requestIdleCallback(start, {
-                        timeout: 4000
-                    });
-                } else {
-                    setTimeout(start, 3000);
-                }
-
-                return;
-            }
-
-            /*
-             * Mobile:
-             * Jangan load Rive pada initial page load.
-             * Mulai setelah interaksi pertama pengguna.
-             */
-            window.addEventListener('pointerdown', startMobile, {
-                passive: true
-            });
-
-            window.addEventListener('scroll', startMobile, {
-                passive: true
-            });
-
-            window.addEventListener('keydown', startMobile);
-        }
-
         if (document.readyState === 'loading') {
-            document.addEventListener(
-                'DOMContentLoaded',
-                startRiveLater,
-                { once: true }
-            );
+            document.addEventListener('DOMContentLoaded', initWhenReady);
         } else {
-            startRiveLater();
+            initWhenReady();
         }
     })();
 

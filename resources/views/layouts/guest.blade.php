@@ -21,9 +21,7 @@
     </noscript>
 
     @viteReactRefresh
-    @vite(['resources/css/app.css'])
-    @livewireStyles
-
+    @vite(['resources/css/login.css'])
     <style>
         /* Ambient drifting background orbs */
         @keyframes ambientDrift {
@@ -47,12 +45,20 @@
         /* Selection theming */
         ::selection { background: rgba(16, 185, 129, .22); }
         .dark ::selection { background: rgba(217, 70, 239, .35); }
+
+        /* Mobile GPU/CPU perf A/B test - only disable backdrop blur */
+        @media (max-width: 767px) {
+            .backdrop-blur-xl {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:justify-center items-center relative overflow-x-clip">
 
     <!-- Ambient Background -->
-    <div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
+    <div class="auth-ambient fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
         <div class="absolute -top-40 -right-32 w-[30rem] h-[30rem] rounded-full bg-emerald-300/50 dark:bg-emerald-500/10 blur-3xl ambient-drift"></div>
         <div class="absolute -bottom-44 -left-32 w-[34rem] h-[34rem] rounded-full bg-teal-300/60 dark:bg-teal-500/10 blur-3xl ambient-drift-slow"></div>
         <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 rounded-full bg-teal-200/60 dark:bg-teal-500/10 blur-3xl"></div>
@@ -112,7 +118,6 @@
 
     @stack('scripts')
 
-    @livewireScripts
     @include('partials.pwa-register')
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="{{ asset('images/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('images/logo-login.webp') }}" type="image/webp">
     @include('partials.pwa-meta')
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -23,7 +23,17 @@
     </noscript>
 
     @viteReactRefresh
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if(request()->is('dashboard'))
+        @vite([
+            'resources/css/dashboard.css',
+            'resources/js/app.js'
+        ])
+    @else
+        @vite([
+            'resources/css/app.css',
+            'resources/js/app.js'
+        ])
+    @endif
     @livewireStyles
 
     <style>
@@ -90,7 +100,13 @@
                 <!-- Logo & Brand -->
                 <div class="flex items-center gap-3">
                     <div class="w-11 h-11 rounded-xl bg-white p-0.5 shadow-md shadow-emerald-500/10 border border-slate-100 flex items-center justify-center overflow-hidden shrink-0">
-                        <img src="{{ asset('images/logo.png') }}" alt="Logo Jurnal 7 Kebiasaan" class="w-full h-full object-contain">
+                        <img
+                            src="{{ asset('images/logo-login.webp') }}"
+                            alt="Logo Jurnal 7 Kebiasaan"
+                            width="58"
+                            height="56"
+                            class="w-full h-full object-contain"
+                        >
                     </div>
                     <div>
                         <span class="font-extrabold text-slate-900 dark:text-slate-100 tracking-tight text-base sm:text-lg block leading-tight">SMK BPPI</span>

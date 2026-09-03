@@ -1,0 +1,293 @@
+@import "tailwindcss" source(none);
+
+/* ==========================================
+   Sources khusus halaman login
+   ========================================== */
+@source "../views/auth/**/*.blade.php";
+@source "../views/layouts/guest.blade.php";
+@source "../views/partials/**/*.blade.php";
+
+/* ==========================================
+   Shared theme dari app.css
+   ========================================== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+        'Noto Color Emoji';
+
+    --font-display: 'Baloo 2', 'Plus Jakarta Sans',
+        ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary-50: #ECFDF5;
+    --color-primary-500: #10B981;
+    --color-primary-600: #059669;
+    --color-primary-700: #047857;
+
+    --color-ink-400: #94A3B8;
+    --color-ink-600: #475569;
+    --color-ink-900: #0F172A;
+
+    --color-surface-50: #F8FAFC;
+
+    --color-accent-amber: #F59E0B;
+    --color-accent-teal: #14B8A6;
+    --color-accent-error: #E11D48;
+
+    --shadow-card:
+        0 1px 2px rgba(15, 23, 42, 0.04),
+        0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+/* ==========================================
+   Accessibility
+   ========================================== */
+:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ==========================================
+   Auth decorations
+   ========================================== */
+@keyframes bintangFloat {
+    0%, 100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+}
+
+.bintang-float {
+    animation: bintangFloat 4.5s ease-in-out infinite;
+}
+
+@keyframes mascotStarTwinkle {
+    0%, 100% {
+        opacity: .25;
+        transform: scale(.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.15);
+    }
+}
+
+.mascot-star {
+    animation: mascotStarTwinkle 2.6s ease-in-out infinite;
+}
+
+.bintang-sparkle {
+    transform-origin: 82px 33px;
+    animation: mascotStarTwinkle 2.2s ease-in-out infinite;
+}
+
+.bintang-mascot {
+    filter: drop-shadow(0 6px 14px rgba(6, 78, 59, .35));
+}
+
+/* ==========================================
+   Auth orbit
+   ========================================== */
+@keyframes orbitSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.orbit-ring {
+    animation: orbitSpin 30s linear infinite;
+}
+
+.orbit-star {
+    filter: drop-shadow(0 0 5px rgba(251, 191, 36, .55));
+}
+
+/* ==========================================
+   Auth background grid
+   ========================================== */
+.auth-grid {
+    background-image:
+        linear-gradient(
+            to right,
+            rgba(15, 23, 42, .05) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(15, 23, 42, .05) 1px,
+            transparent 1px
+        );
+
+    background-size: 56px 56px;
+}
+
+.dark .auth-grid {
+    background-image:
+        linear-gradient(
+            to right,
+            rgba(255, 255, 255, .04) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, .04) 1px,
+            transparent 1px
+        );
+}
+
+/* ==========================================
+   Auth inputs
+   ========================================== */
+.auth-input {
+    @apply
+        w-full
+        pl-11
+        pr-4
+        py-3.5
+        rounded-2xl
+        bg-slate-50
+        dark:bg-slate-800/70
+        border
+        border-slate-200/80
+        dark:border-slate-700/80
+        text-sm
+        font-medium
+        text-slate-800
+        dark:text-slate-100
+        placeholder:text-slate-400
+        dark:placeholder:text-slate-500
+        outline-none
+        transition-all
+        duration-200
+        shadow-sm
+        shadow-slate-900/5;
+}
+
+.auth-input:focus {
+    @apply
+        bg-white
+        dark:bg-slate-800
+        border-emerald-400
+        dark:border-emerald-500
+        ring-4
+        ring-emerald-500/20
+        shadow-lg
+        shadow-emerald-500/10;
+}
+
+select.auth-input {
+    @apply pr-10;
+}
+
+/* ==========================================
+   Auth input icons
+   ========================================== */
+.auth-icon-wrap {
+    @apply text-slate-400 dark:text-slate-500;
+}
+
+.auth-icon-wrap:focus-within {
+    @apply text-emerald-600 dark:text-emerald-400;
+}
+
+/* ==========================================
+   Button shine
+   ========================================== */
+.btn-shine::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+
+    background: linear-gradient(
+        105deg,
+        transparent 42%,
+        rgba(255, 255, 255, .28) 50%,
+        transparent 58%
+    );
+
+    transform: translateX(-130%);
+    pointer-events: none;
+}
+
+.btn-shine:hover::before {
+    animation: shineSweep .9s cubic-bezier(.4, 0, .2, 1) forwards;
+}
+
+@keyframes shineSweep {
+    to {
+        transform: translateX(130%);
+    }
+}
+
+/* ==========================================
+   Auth animations
+   ========================================== */
+@keyframes floatSlow {
+    0%, 100% {
+        transform: translateY(0) rotate(0);
+    }
+
+    50% {
+        transform: translateY(-8px) rotate(1deg);
+    }
+}
+
+@keyframes floatReverse {
+    0%, 100% {
+        transform: translateY(0) rotate(0);
+    }
+
+    50% {
+        transform: translateY(8px) rotate(-1deg);
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% {
+        opacity: .4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: .8;
+        transform: scale(1.05);
+    }
+}
+
+.animate-float-slow {
+    animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+    animation: floatReverse 7s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* ==========================================
+   Mobile performance
+   Pertahankan karena sebelumnya TBT -> 0 ms
+   ========================================== */
+@media (max-width: 767px) {
+    .backdrop-blur-xl {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-float-slow,
+    .animate-float-reverse,
+    .animate-pulse-glow {
+        animation: none !important;
+    }
+}

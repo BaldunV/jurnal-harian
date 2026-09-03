@@ -14,6 +14,9 @@ export default defineConfig({
         laravel({
             input: [
                 'resources/css/app.css',
+                'resources/css/login.css',
+                'resources/css/dashboard.css',
+
                 'resources/js/app.js',
                 'resources/js/apps/dashboard-react.jsx',
                 'resources/js/apps/statistics-react.jsx',

@@ -489,25 +489,22 @@
 
 
 <!-- Header Banner Modern -->
-<div class="modern-hero-gradient student-parallax-hero relative rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden" data-mobile-parallax>
-    <!-- Mobile depth layers: the journal journey moves behind the task, never over it. -->
-    <div class="student-parallax-layer student-parallax-layer--back" data-parallax-layer data-parallax-speed="0.12" aria-hidden="true">
+<div class="modern-hero-gradient student-parallax-hero relative rounded-3xl p-6 sm:p-8 text-white shadow-2xl overflow-hidden">
+    <!-- Decorative hero layers -->
+    <div class="student-parallax-layer student-parallax-layer--back" aria-hidden="true">
         <span class="student-parallax-orbit student-parallax-orbit--one"></span>
         <span class="student-parallax-orbit student-parallax-orbit--two"></span>
     </div>
-    <div class="student-parallax-layer student-parallax-layer--mid" data-parallax-layer data-parallax-speed="0.24" aria-hidden="true">
+    <div class="student-parallax-layer student-parallax-layer--mid" aria-hidden="true">
         <span class="student-parallax-orb student-parallax-orb--sun"></span>
         <span class="student-parallax-orb student-parallax-orb--mint"></span>
         <span class="student-parallax-orb student-parallax-orb--amber"></span>
     </div>
 
-    <!-- Shader Waves Background (React) -->
-    <div class="react-shader student-parallax-layer absolute inset-0 z-0" data-parallax-layer data-parallax-speed="0.08" aria-hidden="true"></div>
-    
     <!-- Animated Mesh Background -->
-    <div class="mesh-background student-parallax-layer absolute inset-0" data-parallax-layer data-parallax-speed="0.16" aria-hidden="true"></div>
-    
-    <div class="student-parallax-content relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6" data-parallax-layer data-parallax-speed="0.025">
+    <div class="mesh-background student-parallax-layer absolute inset-0" aria-hidden="true"></div>
+
+    <div class="student-parallax-content relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="space-y-3">
             <div class="modern-badge inline-flex">
                 @include('partials.icon', ['name' => 'calendar-days', 'class' => 'w-3.5 h-3.5'])
@@ -997,7 +994,6 @@
 @endsection
 
 @push('scripts')
-@vite('resources/js/apps/login-react.tsx')
 <script data-navigate-once>
     function setPresetJam(type, time) {
         const input = document.getElementById(type === 'bangun' ? 'bangun-pagi-time' : 'input-tidur-note');
@@ -1366,14 +1362,6 @@
             a.play().catch(() => {});
         } catch (e) {}
     }
-
-    (function () {
-        try {
-            getCameraAudio();
-            getSholatAudio();
-            getPressAudio();
-        } catch (e) {}
-    })();
 
     function updatePrayerLogic() {
         const checkboxes = document.querySelectorAll('.prayer-checkbox');
@@ -1745,10 +1733,49 @@ if (permission === 'granted') {
         }
     }
 </script>
-<script src="{{ asset('js/rive.min.js') }}" data-navigate-once></script>
 <script data-navigate-once>
     (() => {
         'use strict';
+
+        let duoRiveLoadPromise = null;
+        let duoWaitingForInteraction = false;
+
+        function loadDuoRiveLibrary() {
+            if (typeof window.rive !== 'undefined') {
+                return Promise.resolve();
+            }
+
+            if (duoRiveLoadPromise) {
+                return duoRiveLoadPromise;
+            }
+
+            duoRiveLoadPromise = new Promise((resolve, reject) => {
+                const existing = document.getElementById('duo-rive-runtime');
+
+                if (existing) {
+                    existing.addEventListener('load', resolve, { once: true });
+                    existing.addEventListener('error', reject, { once: true });
+                    return;
+                }
+
+                const script = document.createElement('script');
+
+                script.id = 'duo-rive-runtime';
+                script.src = @json(asset('js/rive.min.js'));
+                script.async = true;
+
+                script.onload = () => resolve();
+
+                script.onerror = () => {
+                    duoRiveLoadPromise = null;
+                    reject(new Error('Rive runtime gagal dimuat'));
+                };
+
+                document.body.appendChild(script);
+            });
+
+            return duoRiveLoadPromise;
+        }
 
         let duoInstance = null;
         let duoCanvas = null;
@@ -1879,13 +1906,7 @@ if (permission === 'granted') {
                 return;
             }
 
-            if (typeof rive === 'undefined') {
-                if (duoInitRetryTimer === null) {
-                    duoInitRetryTimer = setTimeout(() => {
-                        duoInitRetryTimer = null;
-                        initDuoRive();
-                    }, 200);
-                }
+            if (typeof window.rive === 'undefined') {
                 return;
             }
 
@@ -1938,127 +1959,76 @@ if (permission === 'granted') {
             duoCanvas.addEventListener('click', duoClickHandler);
         }
 
+        function scheduleDuoRive() {
+            const canvas = document.getElementById('duo-lingo-canvas');
+
+            if (!canvas) {
+                return;
+            }
+
+            // Kalau runtime sudah pernah dimuat, langsung inisialisasi.
+            if (typeof window.rive !== 'undefined') {
+                initDuoRive();
+                return;
+            }
+
+            if (duoWaitingForInteraction) {
+                return;
+            }
+
+            duoWaitingForInteraction = true;
+
+            let started = false;
+
+            const cleanupListeners = () => {
+                window.removeEventListener('pointerdown', trigger);
+                window.removeEventListener('scroll', trigger);
+                window.removeEventListener('keydown', trigger);
+            };
+
+            const trigger = () => {
+                if (started) {
+                    return;
+                }
+
+                started = true;
+                duoWaitingForInteraction = false;
+
+                cleanupListeners();
+
+                const load = () => {
+                    loadDuoRiveLibrary()
+                        .then(() => {
+                            initDuoRive();
+                        })
+                        .catch((error) => {
+                            console.error('Rive dashboard gagal dimuat:', error);
+                        });
+                };
+
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(load, {
+                        timeout: 1500
+                    });
+                } else {
+                    setTimeout(load, 300);
+                }
+            };
+
+            window.addEventListener('pointerdown', trigger, {
+                passive: true
+            });
+
+            window.addEventListener('scroll', trigger, {
+                passive: true
+            });
+
+            window.addEventListener('keydown', trigger);
+        }
+
         window.addEventListener('resize', resizeDuoCanvas);
 
-        document.addEventListener('livewire:navigated', initDuoRive);
-    })();
-</script>
-<script data-navigate-once>
-    (() => {
-        'use strict';
-
-        let parallaxRoot = null;
-        let parallaxLayers = [];
-        let parallaxFrame = null;
-        let parallaxScrollHandler = null;
-        let parallaxResizeHandler = null;
-        let parallaxViewportQuery = null;
-        let parallaxViewportHandler = null;
-        let parallaxMotionQuery = null;
-        let parallaxMotionHandler = null;
-
-        function stopStudentParallax() {
-            if (parallaxFrame !== null) {
-                cancelAnimationFrame(parallaxFrame);
-                parallaxFrame = null;
-            }
-            if (parallaxRoot && parallaxScrollHandler) {
-                window.removeEventListener('scroll', parallaxScrollHandler);
-            }
-            if (parallaxRoot && parallaxResizeHandler) {
-                window.removeEventListener('resize', parallaxResizeHandler);
-            }
-            if (parallaxViewportQuery && parallaxViewportHandler) {
-                if (parallaxViewportQuery.removeEventListener) {
-                    parallaxViewportQuery.removeEventListener('change', parallaxViewportHandler);
-                } else if (parallaxViewportQuery.removeListener) {
-                    parallaxViewportQuery.removeListener(parallaxViewportHandler);
-                }
-            }
-            if (parallaxMotionQuery && parallaxMotionHandler) {
-                if (parallaxMotionQuery.removeEventListener) {
-                    parallaxMotionQuery.removeEventListener('change', parallaxMotionHandler);
-                } else if (parallaxMotionQuery.removeListener) {
-                    parallaxMotionQuery.removeListener(parallaxMotionHandler);
-                }
-            }
-            parallaxRoot?.classList.remove('student-parallax-active');
-            parallaxLayers.forEach((layer) => {
-                layer.style.transform = '';
-            });
-            parallaxRoot = null;
-            parallaxLayers = [];
-            parallaxScrollHandler = null;
-            parallaxResizeHandler = null;
-            parallaxViewportQuery = null;
-            parallaxViewportHandler = null;
-            parallaxMotionQuery = null;
-            parallaxMotionHandler = null;
-        }
-
-        function initStudentParallax() {
-            stopStudentParallax();
-
-            const root = document.querySelector('[data-mobile-parallax]');
-            if (!root) return;
-
-            const mobileQuery = window.matchMedia('(max-width: 1023px)');
-            const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-            const saveData = Boolean(navigator.connection && navigator.connection.saveData);
-
-            if (!mobileQuery.matches || reducedMotionQuery.matches || saveData) return;
-
-            parallaxRoot = root;
-            parallaxLayers = Array.from(root.querySelectorAll('[data-parallax-layer]'));
-            parallaxRoot.classList.add('student-parallax-active');
-
-            const schedule = () => {
-                if (parallaxFrame === null) {
-                    parallaxFrame = requestAnimationFrame(update);
-                }
-            };
-
-            const update = () => {
-                parallaxFrame = null;
-                if (!parallaxRoot || !parallaxRoot.isConnected) return;
-
-                const rect = parallaxRoot.getBoundingClientRect();
-                const pageTop = rect.top + window.scrollY;
-                const maxDistance = Math.max(0, parallaxRoot.offsetHeight);
-                const distance = Math.max(0, Math.min(maxDistance, window.scrollY - pageTop));
-
-                parallaxLayers.forEach((layer) => {
-                    const speed = Number(layer.dataset.parallaxSpeed || 0);
-                    layer.style.transform = `translate3d(0, ${Math.round(distance * speed * 10) / 10}px, 0)`;
-                });
-            };
-
-            parallaxScrollHandler = schedule;
-            parallaxResizeHandler = schedule;
-            window.addEventListener('scroll', parallaxScrollHandler, { passive: true });
-            window.addEventListener('resize', parallaxResizeHandler, { passive: true });
-
-            parallaxViewportQuery = mobileQuery;
-            parallaxViewportHandler = initStudentParallax;
-            if (parallaxViewportQuery.addEventListener) {
-                parallaxViewportQuery.addEventListener('change', parallaxViewportHandler);
-            } else if (parallaxViewportQuery.addListener) {
-                parallaxViewportQuery.addListener(parallaxViewportHandler);
-            }
-
-            parallaxMotionQuery = reducedMotionQuery;
-            parallaxMotionHandler = initStudentParallax;
-            if (parallaxMotionQuery.addEventListener) {
-                parallaxMotionQuery.addEventListener('change', parallaxMotionHandler);
-            } else if (parallaxMotionQuery.addListener) {
-                parallaxMotionQuery.addListener(parallaxMotionHandler);
-            }
-
-            update();
-        }
-
-        initStudentParallax();
-        document.addEventListener('livewire:navigated', initStudentParallax);
+        scheduleDuoRive();
     })();
 </script>
 @endpush
