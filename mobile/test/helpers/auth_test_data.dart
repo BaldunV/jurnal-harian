@@ -1,5 +1,3 @@
-const testChallengeId = 'cccccccccccccccccccccccccccccccccccccccccccccccc';
-
 Map<String, Object?> studentData({String nis = '20260012'}) {
   return <String, Object?>{
     'id': 12,
@@ -9,28 +7,6 @@ Map<String, Object?> studentData({String nis = '20260012'}) {
     'role': 'siswa',
     'worship_type': 'islam',
     'profile_photo_url': null,
-  };
-}
-
-Map<String, Object?> otpChallengeEnvelope({
-  int resendAfterSeconds = 60,
-  int expiresAfterSeconds = 300,
-}) {
-  final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-
-  return <String, Object?>{
-    'success': true,
-    'message': 'Kode OTP telah dikirim.',
-    'data': <String, Object?>{
-      'otp_required': true,
-      'challenge_id': testChallengeId,
-      'channel': 'whatsapp',
-      'channel_label': 'WhatsApp',
-      'masked_phone': '081 **** 7890',
-      'sent_at': now,
-      'resend_at': now + resendAfterSeconds,
-      'expires_at': now + expiresAfterSeconds,
-    },
   };
 }
 

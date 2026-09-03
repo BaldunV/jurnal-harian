@@ -25,8 +25,10 @@ class Journal extends Model
         'makan_photo',
         'gemar_belajar',
         'belajar_note',
+        'belajar_photo',
         'bermasyarakat',
         'masyarakat_note',
+        'masyarakat_photo',
         'tidur_cepat',
         'tidur_note',
         'completed_count',
@@ -51,6 +53,8 @@ class Journal extends Model
     protected $appends = [
         'olahraga_photo_url',
         'makan_photo_url',
+        'belajar_photo_url',
+        'masyarakat_photo_url',
     ];
 
     public function setDateAttribute($value)
@@ -71,6 +75,18 @@ class Journal extends Model
     public function getMakanPhotoUrlAttribute()
     {
         return $this->makan_photo ? asset('storage/'.$this->makan_photo) : null;
+    }
+
+    public function getBelajarPhotoUrlAttribute()
+    {
+        return $this->belajar_photo
+            ? asset('storage/'.$this->belajar_photo)
+            : null;
+    }
+
+    public function getMasyarakatPhotoUrlAttribute()
+    {
+        return $this->masyarakat_photo ? asset('storage/'.$this->masyarakat_photo) : null;
     }
 
     /**

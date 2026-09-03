@@ -187,8 +187,8 @@ $badgeClass = 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400
                 { name: 'Beribadah', status: j.beribadah, icon: `@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-5 h-5'])`, note: formatPrayerDetails(j.ibadah_details) },
                 { name: 'Berolahraga', status: j.berolahraga, icon: `@include('partials.icon', ['name' => 'footprints', 'class' => 'w-5 h-5'])`, note: j.olahraga_note, photo: j.olahraga_photo_url },
                 { name: 'Makan Sehat', status: j.makan_sehat, icon: `@include('partials.icon', ['name' => 'salad', 'class' => 'w-5 h-5'])`, note: j.makan_note, photo: j.makan_photo_url },
-                { name: 'Gemar Belajar', status: j.gemar_belajar, icon: `@include('partials.icon', ['name' => 'book-open', 'class' => 'w-5 h-5'])`, note: j.belajar_note },
-                { name: 'Bermasyarakat', status: j.bermasyarakat, icon: `@include('partials.icon', ['name' => 'handshake', 'class' => 'w-5 h-5'])`, note: j.masyarakat_note },
+                { name: 'Gemar Belajar', status: j.gemar_belajar, icon: `@include('partials.icon', ['name' => 'book-open', 'class' => 'w-5 h-5'])`, note: j.belajar_note, photo: j.belajar_photo_url },
+                { name: 'Bermasyarakat', status: j.bermasyarakat, icon: `@include('partials.icon', ['name' => 'handshake', 'class' => 'w-5 h-5'])`, note: j.masyarakat_note, photo: j.masyarakat_photo_url },
                 { name: 'Tidur Cepat', status: j.tidur_cepat, icon: `@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-5 h-5'])`, note: j.tidur_note },
             ];
 

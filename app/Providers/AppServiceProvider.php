@@ -32,21 +32,6 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        RateLimiter::for('mobile-otp', function (Request $request): array {
-            $challenge = (string) $request->input('challenge_id');
-
-            return [
-                Limit::perMinute(10)->by('mobile-otp-ip|'.$request->ip()),
-                Limit::perMinute(5)->by('mobile-otp-challenge|'.$challenge),
-            ];
-        });
-
-        RateLimiter::for('mobile-otp-resend', function (Request $request): Limit {
-            return Limit::perMinute(3)->by(
-                'mobile-otp-resend|'.(string) $request->input('challenge_id'),
-            );
-        });
-
         RateLimiter::for('mobile-api', function (Request $request): Limit {
             return Limit::perMinute(120)->by(
                 'mobile-api|'.($request->user()?->getAuthIdentifier() ?? $request->ip()),

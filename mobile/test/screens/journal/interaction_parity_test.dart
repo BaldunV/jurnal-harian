@@ -5,7 +5,6 @@ import 'package:jurnal_siswa/core/constants/habits.dart';
 import 'package:jurnal_siswa/models/journal.dart';
 import 'package:jurnal_siswa/models/statistics.dart';
 import 'package:jurnal_siswa/models/student.dart';
-import 'package:jurnal_siswa/app.dart';
 import 'package:jurnal_siswa/providers/journal_controller.dart';
 import 'package:jurnal_siswa/providers/statistics_controller.dart';
 import 'package:jurnal_siswa/screens/journal/journal_dashboard_screen.dart';
@@ -14,11 +13,6 @@ import 'package:jurnal_siswa/widgets/buttons.dart';
 import 'package:jurnal_siswa/widgets/habit_card.dart';
 import 'package:jurnal_siswa/widgets/habit_form_card.dart';
 import 'package:jurnal_siswa/widgets/neon_checkbox.dart';
-
-import '../../helpers/auth_provider_container.dart';
-import '../../helpers/auth_test_data.dart';
-import '../../helpers/fake_http_client_adapter.dart';
-import '../../helpers/memory_token_storage.dart';
 
 const _student = Student(
   id: 1,
@@ -318,35 +312,5 @@ void main() {
     // All seven habit rows render.
     expect(find.text('Berolahraga'), findsOneWidget);
     expect(find.text('Tidur Cepat'), findsOneWidget);
-  });
-
-  testWidgets('OTP screen keeps its widget keys intact', (tester) async {
-    final adapter = FakeHttpClientAdapter()
-      ..enqueueJson(otpChallengeEnvelope(), statusCode: 202);
-    final container = createAuthProviderContainer(
-      adapter: adapter,
-      tokenStorage: MemoryTokenStorage(),
-    );
-    addTearDown(container.dispose);
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const JurnalApp()),
-    );
-    await tester.pumpAndSettle();
-
-    // Reach the OTP screen.
-    await tester.enterText(
-      find.byKey(const Key('login_nis_field')),
-      '20260012',
-    );
-    await tester.enterText(
-      find.byKey(const Key('login_password_field')),
-      'secret123',
-    );
-    await tester.tap(find.byKey(const Key('login_submit_button')));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('otp_code_field')), findsOneWidget);
-    expect(find.byKey(const Key('otp_verify_button')), findsOneWidget);
-    expect(find.byKey(const Key('otp_resend_button')), findsOneWidget);
   });
 }

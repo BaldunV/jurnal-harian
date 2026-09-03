@@ -44,8 +44,10 @@ class Journal {
     this.makanPhotoUrl,
     required this.gemarBelajar,
     this.belajarNote,
+    this.belajarPhotoUrl,
     required this.bermasyarakat,
     this.masyarakatNote,
+    this.masyarakatPhotoUrl,
     required this.tidurCepat,
     this.tidurNote,
     required this.completedCount,
@@ -69,8 +71,10 @@ class Journal {
       makanPhotoUrl: json['makan_photo_url'] as String?,
       gemarBelajar: _asBool(json['gemar_belajar']),
       belajarNote: json['belajar_note'] as String?,
+      belajarPhotoUrl: json['belajar_photo_url'] as String?,
       bermasyarakat: _asBool(json['bermasyarakat']),
       masyarakatNote: json['masyarakat_note'] as String?,
+      masyarakatPhotoUrl: json['masyarakat_photo_url'] as String?,
       tidurCepat: _asBool(json['tidur_cepat']),
       tidurNote: json['tidur_note'] as String?,
       completedCount: _asInt(json['completed_count']),
@@ -93,8 +97,10 @@ class Journal {
   final String? makanPhotoUrl;
   final bool gemarBelajar;
   final String? belajarNote;
+  final String? belajarPhotoUrl;
   final bool bermasyarakat;
   final String? masyarakatNote;
+  final String? masyarakatPhotoUrl;
   final bool tidurCepat;
   final String? tidurNote;
 

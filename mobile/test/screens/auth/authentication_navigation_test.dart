@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jurnal_siswa/app.dart';
 import 'package:jurnal_siswa/screens/auth/login_screen.dart';
-import 'package:jurnal_siswa/screens/auth/otp_screen.dart';
 
 import 'package:jurnal_siswa/providers/journal_controller.dart';
 import 'package:jurnal_siswa/providers/statistics_controller.dart';
@@ -74,52 +73,19 @@ void main() {
     expect(find.text('Format NIS tidak valid.'), findsOneWidget);
   });
 
-  testWidgets('OTP challenge shows a disabled resend cooldown', (tester) async {
-    final adapter = FakeHttpClientAdapter()
-      ..enqueueJson(
-        otpChallengeEnvelope(resendAfterSeconds: 60),
-        statusCode: 202,
-      );
-    await _pumpApp(tester, adapter: adapter, storage: MemoryTokenStorage());
-
-    await _fillAndSubmitLogin(tester);
-
-    expect(find.byType(OtpScreen), findsOneWidget);
-    expect(find.textContaining('WhatsApp'), findsOneWidget);
-    expect(find.textContaining('081 **** 7890'), findsOneWidget);
-    final resend = tester.widget<TextButton>(
-      find.byKey(const Key('otp_resend_button')),
-    );
-    expect(resend.onPressed, isNull);
-  });
-
-  testWidgets('OTP success replaces auth screens with the app shell', (
+  testWidgets('login success replaces auth screens with the app shell', (
     tester,
   ) async {
     final adapter = FakeHttpClientAdapter()
-      ..enqueueJson(otpChallengeEnvelope(), statusCode: 202)
       ..enqueueJson(tokenEnvelope())
       ..enqueueJson(meEnvelope());
     final storage = MemoryTokenStorage();
     await _pumpApp(tester, adapter: adapter, storage: storage);
     await _fillAndSubmitLogin(tester);
 
-    final otpTextField = find.descendant(
-      of: find.byKey(const Key('otp_code_field')),
-      matching: find.byType(TextField),
-    );
-    await tester.enterText(otpTextField, '123456');
-    await tester.pump();
-    final verify = find.byKey(const Key('otp_verify_button'));
-    await tester.ensureVisible(verify);
-    await tester.tap(verify);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 800));
-
     expect(storage.token, '12|plain-token');
     expect(find.byKey(const Key('authenticated_app_shell')), findsOneWidget);
     expect(find.byType(LoginScreen), findsNothing);
-    expect(find.byType(OtpScreen), findsNothing);
   });
 
   testWidgets('stored valid token opens authenticated navigation', (
@@ -150,7 +116,6 @@ void main() {
     );
 
     expect(find.byType(LoginScreen), findsOneWidget);
-    expect(find.byType(OtpScreen), findsNothing);
     expect(find.byKey(const Key('authenticated_app_shell')), findsNothing);
   });
 }

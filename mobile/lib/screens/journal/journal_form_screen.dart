@@ -29,6 +29,8 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
   late JournalDraft _draft;
   String? _olahragaPhoto;
   String? _makanPhoto;
+  String? _belajarPhoto;
+  String? _masyarakatPhoto;
   bool _busy = false;
 
   @override
@@ -54,6 +56,12 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
       }
       if (_makanPhoto != null) {
         await notifier.uploadPhoto(saved.id, 'makan', _makanPhoto!);
+      }
+      if (_belajarPhoto != null) {
+        await notifier.uploadPhoto(saved.id, 'belajar', _belajarPhoto!);
+      }
+      if (_masyarakatPhoto != null) {
+        await notifier.uploadPhoto(saved.id, 'masyarakat', _masyarakatPhoto!);
       }
       if (submit) {
         await notifier.submit(_draft, existingId: saved.id);
@@ -292,7 +300,10 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
                 ? null
                 : (value) => _setNote(habit.key, value),
             extra: habit.key == 'beribadah' ? _worshipDetails(context) : null,
-            photo: habit.key == 'berolahraga' || habit.key == 'makan_sehat'
+            photo: habit.key == 'berolahraga' ||
+                    habit.key == 'makan_sehat' ||
+                    habit.key == 'gemar_belajar' ||
+                    habit.key == 'bermasyarakat'
                 ? _photoField(habit.key)
                 : null,
           ),
@@ -307,18 +318,47 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
   }
 
   Widget _photoField(String key) {
-    final isOlahraga = key == 'berolahraga';
+    final label = switch (key) {
+      'berolahraga' => 'Foto olahraga',
+      'makan_sehat' => 'Foto makan sehat',
+      'gemar_belajar' => 'Foto gemar belajar',
+      'bermasyarakat' => 'Foto bermasyarakat',
+      _ => 'Foto dokumentasi',
+    };
+
+    final path = switch (key) {
+      'berolahraga' => _olahragaPhoto,
+      'makan_sehat' => _makanPhoto,
+      'gemar_belajar' => _belajarPhoto,
+      'bermasyarakat' => _masyarakatPhoto,
+      _ => null,
+    };
+
+    final url = switch (key) {
+      'berolahraga' => widget.existing?.olahragaPhotoUrl,
+      'makan_sehat' => widget.existing?.makanPhotoUrl,
+      'gemar_belajar' => widget.existing?.belajarPhotoUrl,
+      'bermasyarakat' => widget.existing?.masyarakatPhotoUrl,
+      _ => null,
+    };
+
     return PhotoField(
-      label: isOlahraga ? 'Foto olahraga' : 'Foto makan sehat',
-      file: isOlahraga
-          ? (_olahragaPhoto == null ? null : File(_olahragaPhoto!))
-          : (_makanPhoto == null ? null : File(_makanPhoto!)),
-      url: isOlahraga
-          ? widget.existing?.olahragaPhotoUrl
-          : widget.existing?.makanPhotoUrl,
-      onPicked: (path) => setState(
-        () => isOlahraga ? _olahragaPhoto = path : _makanPhoto = path,
-      ),
+      label: label,
+      file: path == null ? null : File(path),
+      url: url,
+      onPicked: (pickedPath) {
+        setState(() {
+          if (key == 'berolahraga') {
+            _olahragaPhoto = pickedPath;
+          } else if (key == 'makan_sehat') {
+            _makanPhoto = pickedPath;
+          } else if (key == 'gemar_belajar') {
+            _belajarPhoto = pickedPath;
+          } else if (key == 'bermasyarakat') {
+            _masyarakatPhoto = pickedPath;
+          }
+        });
+      },
     );
   }
 

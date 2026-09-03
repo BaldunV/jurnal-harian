@@ -3,7 +3,6 @@
 namespace Tests\Feature\Api;
 
 use App\Models\Journal;
-use App\Models\OtpDevice;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,18 +78,12 @@ class StatisticsProfileApiTest extends TestCase
 
     public function test_profile_updates_are_whitelisted_and_sensitive_fields_are_never_returned(): void
     {
-        $student = $this->student([
-            'nis' => 'PROFILE-001',
-            'phone' => '081234567890',
-            'otp_channel' => 'sms',
-        ]);
+        $student = $this->student(['nis' => 'PROFILE-001']);
         Sanctum::actingAs($student, ['student']);
 
         $this->getJson('/api/me/profile')
             ->assertOk()
             ->assertJsonPath('data.nis', 'PROFILE-001')
-            ->assertJsonMissingPath('data.phone')
-            ->assertJsonMissingPath('data.otp_channel')
             ->assertJsonMissingPath('data.password')
             ->assertJsonMissingPath('data.profile_photo');
 
@@ -99,7 +92,6 @@ class StatisticsProfileApiTest extends TestCase
             'worship_type' => 'non_muslim',
             'nis' => 'TAKEOVER',
             'role' => 'admin',
-            'phone' => '+620000000',
         ])->assertUnprocessable()
             ->assertJsonPath('code', 'validation_error');
         $student->refresh();
@@ -120,11 +112,6 @@ class StatisticsProfileApiTest extends TestCase
         $student = $this->student(['nis' => 'PASSWORD-001']);
         $currentToken = $student->createToken('Current', ['student'])->plainTextToken;
         $student->createToken('Other', ['student']);
-        OtpDevice::create([
-            'user_id' => $student->id,
-            'token_hash' => hash('sha256', 'trusted-device'),
-            'expires_at' => now()->addDay(),
-        ]);
 
         $this->withToken($currentToken)->postJson('/api/me/change-password', [
             'current_password' => 'wrong-password',
@@ -133,7 +120,6 @@ class StatisticsProfileApiTest extends TestCase
         ])->assertUnprocessable()
             ->assertJsonPath('code', 'current_password_invalid');
         $this->assertDatabaseCount('personal_access_tokens', 2);
-        $this->assertDatabaseCount('otp_devices', 1);
 
         $this->withToken($currentToken)->postJson('/api/me/change-password', [
             'current_password' => 'secret123',
@@ -144,7 +130,6 @@ class StatisticsProfileApiTest extends TestCase
 
         $this->assertTrue(Hash::check('NewPassword1!', $student->fresh()->password));
         $this->assertDatabaseCount('personal_access_tokens', 0);
-        $this->assertDatabaseCount('otp_devices', 0);
         $this->withToken($currentToken)->getJson('/api/me/profile')
             ->assertUnauthorized()
             ->assertJsonPath('code', 'unauthenticated');

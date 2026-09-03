@@ -237,7 +237,7 @@ _FoundationContent _contentFor(FoundationState state) {
     ),
     FoundationState.signedOut => const _FoundationContent(
       title: 'Satu hari, tujuh kebiasaan baik.',
-      description: 'Catat kegiatan harianmu dengan akun sekolah dan konfirmasi OTP yang aman.',
+      description: 'Catat kegiatan harianmu dengan akun sekolah yang aman.',
       statusTitle: 'Fondasi aplikasi siap',
       statusDescription: 'Alur masuk dan jurnal siswa akan tersambung langsung ke sistem sekolah.',
       icon: Icons.shield_outlined,

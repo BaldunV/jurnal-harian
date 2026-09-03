@@ -24,7 +24,7 @@ void main() {
   tearDown(() => client.close());
 
   test('sends the exact valid login request', () async {
-    adapter.enqueueJson(otpChallengeEnvelope(), statusCode: 202);
+    adapter.enqueueJson(tokenEnvelope());
 
     await service.login(nis: ' 20260012 ', password: 'secret123');
 
@@ -39,18 +39,16 @@ void main() {
     });
   });
 
-  test('parses the OTP-required challenge response', () async {
-    adapter.enqueueJson(otpChallengeEnvelope(), statusCode: 202);
+  test('parses the bearer token and student from the login response', () async {
+    adapter.enqueueJson(tokenEnvelope());
 
-    final challenge = await service.login(
+    final result = await service.login(
       nis: '20260012',
       password: 'secret123',
     );
 
-    expect(challenge.challengeId, testChallengeId);
-    expect(challenge.channel, 'whatsapp');
-    expect(challenge.channelLabel, 'WhatsApp');
-    expect(challenge.maskedPhone, '081 **** 7890');
+    expect(result.token, '12|plain-token');
+    expect(result.issuedUser.nis, '20260012');
   });
 
   test('maps invalid credentials without exposing a raw response', () async {
@@ -76,94 +74,19 @@ void main() {
     );
   });
 
-  test('parses OTP success and sends no invented verify fields', () async {
-    adapter.enqueueJson(tokenEnvelope());
-
-    final result = await service.verifyOtp(
-      challengeId: testChallengeId,
-      code: '123456',
-    );
-
-    expect(result.token, '12|plain-token');
-    expect(result.issuedUser.nis, '20260012');
-    expect(adapter.requests.single.data, <String, Object?>{
-      'challenge_id': testChallengeId,
-      'code': '123456',
-    });
-  });
-
-  test('maps an invalid OTP with field feedback', () async {
-    adapter.enqueueJson(
-      errorEnvelope(
-        message: 'Kode OTP salah. Sisa percobaan: 4.',
-        code: 'otp_invalid',
-        errors: const <String, Object?>{
-          'code': <String>['Kode OTP tidak valid.'],
-        },
-      ),
-      statusCode: 422,
-    );
+  test('maps a malformed login response as a server error', () async {
+    adapter.enqueueJson(successEnvelope());
 
     await expectLater(
-      service.verifyOtp(challengeId: testChallengeId, code: '000000'),
+      service.login(nis: '20260012', password: 'secret123'),
       throwsA(
-        isA<ApiException>()
-            .having((error) => error.kind, 'kind', ApiFailureKind.validation)
-            .having((error) => error.code, 'code', 'otp_invalid')
-            .having((error) => error.errors['code'], 'code errors', <String>[
-              'Kode OTP tidak valid.',
-            ]),
+        isA<ApiException>().having(
+          (error) => error.kind,
+          'kind',
+          ApiFailureKind.server,
+        ),
       ),
     );
-  });
-
-  test('maps an expired OTP as gone', () async {
-    adapter.enqueueJson(
-      errorEnvelope(
-        message: 'Kode OTP sudah kedaluwarsa. Silakan login kembali.',
-        code: 'otp_expired',
-      ),
-      statusCode: 410,
-    );
-
-    await expectLater(
-      service.verifyOtp(challengeId: testChallengeId, code: '123456'),
-      throwsA(
-        isA<ApiException>()
-            .having((error) => error.kind, 'kind', ApiFailureKind.gone)
-            .having((error) => error.code, 'code', 'otp_expired'),
-      ),
-    );
-  });
-
-  test('resends with the same challenge and applies new timestamps', () async {
-    adapter.enqueueJson(
-      otpChallengeEnvelope(resendAfterSeconds: 0),
-      statusCode: 202,
-    );
-    final challenge = await service.login(
-      nis: '20260012',
-      password: 'secret123',
-    );
-    final now = DateTime.now().toUtc().millisecondsSinceEpoch ~/ 1000;
-    adapter.enqueueJson(<String, Object?>{
-      'success': true,
-      'message': 'Kode OTP baru telah dikirim.',
-      'data': <String, Object?>{
-        'channel': 'whatsapp',
-        'sent_at': now,
-        'resend_at': now + 60,
-        'expires_at': now + 240,
-      },
-    });
-
-    final updated = await service.resendOtp(challenge);
-
-    expect(updated.challengeId, challenge.challengeId);
-    expect(updated.resendAt.isAfter(challenge.resendAt), isTrue);
-    expect(adapter.requests.last.data, <String, Object?>{
-      'challenge_id': testChallengeId,
-    });
   });
 
   test('maps API rate limiting', () async {

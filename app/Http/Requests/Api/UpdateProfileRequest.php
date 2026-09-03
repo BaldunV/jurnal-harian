@@ -29,8 +29,6 @@ class UpdateProfileRequest extends FormRequest
             'role' => ['prohibited'],
             'kelas' => ['prohibited'],
             'class' => ['prohibited'],
-            'phone' => ['prohibited'],
-            'otp_channel' => ['prohibited'],
             'password' => ['prohibited'],
             'profile_photo' => ['prohibited'],
         ];

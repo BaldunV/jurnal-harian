@@ -9,7 +9,7 @@ class AuthService {
   final ApiClient _apiClient;
   final String deviceName;
 
-  Future<OtpChallenge> login({
+  Future<AuthTokenResult> login({
     required String nis,
     required String password,
   }) async {
@@ -22,28 +22,7 @@ class AuthService {
       },
     );
 
-    return _parse(response, OtpChallenge.fromLoginJson);
-  }
-
-  Future<AuthTokenResult> verifyOtp({
-    required String challengeId,
-    required String code,
-  }) async {
-    final response = await _apiClient.post(
-      'auth/otp/verify',
-      data: <String, Object?>{'challenge_id': challengeId, 'code': code},
-    );
-
     return _parse(response, AuthTokenResult.fromJson);
-  }
-
-  Future<OtpChallenge> resendOtp(OtpChallenge challenge) async {
-    final response = await _apiClient.post(
-      'auth/otp/resend',
-      data: <String, Object?>{'challenge_id': challenge.challengeId},
-    );
-
-    return _parse(response, challenge.applyResendJson);
   }
 
   Future<Student> me() async {

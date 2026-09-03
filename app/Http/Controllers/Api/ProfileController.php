@@ -7,7 +7,6 @@ use App\Http\Requests\Api\UpdateProfileRequest;
 use App\Http\Requests\Api\UploadPhotoRequest;
 use App\Http\Resources\StudentResource;
 use App\Services\MediaService;
-use App\Services\OtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +18,6 @@ class ProfileController extends ApiController
 {
     public function __construct(
         private readonly MediaService $media,
-        private readonly OtpService $otp,
     ) {}
 
     public function show(Request $request): JsonResponse
@@ -65,7 +63,6 @@ class ProfileController extends ApiController
 
         DB::transaction(function () use ($user, $validated): void {
             $user->update(['password' => $validated['password']]);
-            $this->otp->revokeTrustedDevices($user);
             $user->tokens()->delete();
         });
         Auth::guard('sanctum')->forgetUser();

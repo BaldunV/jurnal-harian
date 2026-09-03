@@ -20,11 +20,11 @@ The app is a school-account journal whose identity, authoritative Jakarta date, 
 
 ## Operating Context
 
-Students sign in with NIS, password, and a required OTP, then use the app throughout the day to update one Jakarta-owned journal. Exercise and meal evidence can be captured from the phone. The first release requires a network connection and does not synchronize journals offline.
+Students sign in with NIS and password, then use the app throughout the day to update one Jakarta-owned journal. Exercise and meal evidence can be captured from the phone. The first release requires a network connection and does not synchronize journals offline.
 
 ## Capabilities and Constraints
 
-- Laravel remains authoritative for authentication, authorization, OTP, journals, statistics, profiles, media, and persistence.
+- Laravel remains authoritative for authentication, authorization, journals, statistics, profiles, media, and persistence.
 - Flutter uses expiring Sanctum bearer tokens stored in platform-secure storage; browser sessions never authenticate the mobile API.
 - The client never supplies a user ID, role, or journal date and never treats a request as successful before Laravel confirms it.
 - Android is the only shipped platform in this phase.

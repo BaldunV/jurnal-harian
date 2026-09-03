@@ -169,7 +169,6 @@
             </button>
         </div>
         @error('password')<p class="text-xs text-rose-600 mt-1">{{ $message }}</p>@enderror
-        <p class="mt-1.5 text-[10px] font-medium text-slate-400 dark:text-slate-500">Jika nomor HP akun sudah terdaftar, login akan dilanjutkan dengan verifikasi OTP.</p>
     </div>
 
     <!-- ======== REMEMBER & HELP ======== -->

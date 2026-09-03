@@ -20,8 +20,6 @@ class User extends Authenticatable
         'role',
         'kelas',
         'worship_type',
-        'phone',
-        'otp_channel',
     ];
 
     protected $hidden = [
@@ -40,39 +38,6 @@ class User extends Authenticatable
     public function journals()
     {
         return $this->hasMany(Journal::class);
-    }
-
-    public function otpDevices()
-    {
-        return $this->hasMany(OtpDevice::class);
-    }
-
-    public static function normalizePhone(?string $value): ?string
-    {
-        $phone = trim((string) $value);
-
-        if ($phone === '') {
-            return null;
-        }
-
-        $phone = preg_replace('/[^0-9+]/', '', $phone) ?? '';
-
-        if (str_starts_with($phone, '00')) {
-            $phone = '+'.substr($phone, 2);
-        } elseif (str_starts_with($phone, '0')) {
-            $phone = '+62'.substr($phone, 1);
-        } elseif (str_starts_with($phone, '62')) {
-            $phone = '+'.$phone;
-        } elseif (! str_starts_with($phone, '+')) {
-            $phone = '+'.$phone;
-        }
-
-        return $phone !== '+' ? $phone : null;
-    }
-
-    public function setPhoneAttribute($value): void
-    {
-        $this->attributes['phone'] = static::normalizePhone($value);
     }
 
     /**

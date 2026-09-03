@@ -368,6 +368,7 @@
                     placeholder="Opsional: Materi / Buku yang dipelajari"
                     class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
+            @include('partials.photo-upload', ['type' => 'belajar'])
         </div>
 
         <!-- 6. BERMASYARAKAT -->
@@ -411,6 +412,7 @@
                     placeholder="Opsional: Kegiatan sosial (misal: Kerja bakti / Bantu teman)"
                     class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500">
             </div>
+            @include('partials.photo-upload', ['type' => 'masyarakat'])
         </div>
 
         <!-- 7. TIDUR CEPAT -->

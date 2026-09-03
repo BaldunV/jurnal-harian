@@ -55,9 +55,13 @@ class SessionController extends AsyncNotifier<SessionState> {
 
     try {
       await ref.read(tokenStorageProvider).writeToken(token);
+
       final student = await ref.read(authServiceProvider).me();
+
       state = AsyncData<SessionState>(AuthenticatedSession(student));
     } on ApiException catch (error, stackTrace) {
+      await _clearStoredTokenSafely();
+
       if (error.requiresAuthentication) {
         state = const AsyncData<SessionState>(
           SignedOutSession(notice: _expiredNotice),
@@ -65,9 +69,13 @@ class SessionController extends AsyncNotifier<SessionState> {
       } else {
         state = AsyncError<SessionState>(error, stackTrace);
       }
+
       rethrow;
     } on Object catch (error, stackTrace) {
+      await _clearStoredTokenSafely();
+
       state = AsyncError<SessionState>(error, stackTrace);
+
       rethrow;
     }
   }
@@ -123,6 +131,14 @@ class SessionController extends AsyncNotifier<SessionState> {
   void updateStudent(Student student) {
     if (state.value is AuthenticatedSession) {
       state = AsyncData<SessionState>(AuthenticatedSession(student));
+    }
+  }
+
+  Future<void> _clearStoredTokenSafely() async {
+    try {
+      await ref.read(tokenStorageProvider).clearToken();
+    } on Object {
+      // Jangan mengganti error utama ketika rollback token gagal.
     }
   }
 

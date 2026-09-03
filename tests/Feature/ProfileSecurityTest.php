@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\OtpDevice;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -12,18 +11,13 @@ class ProfileSecurityTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_student_can_change_to_a_stronger_password_and_trusted_devices_are_revoked(): void
+    public function test_student_can_change_to_a_stronger_password(): void
     {
         $user = User::create([
             'nis' => 'SIS002',
             'name' => 'Siswa Password',
             'password' => Hash::make('secret123'),
             'role' => 'siswa',
-        ]);
-        OtpDevice::create([
-            'user_id' => $user->id,
-            'token_hash' => hash('sha256', 'old-device'),
-            'expires_at' => now()->addDays(10),
         ]);
 
         $response = $this->actingAs($user)->post('/profile/password', [
@@ -34,7 +28,6 @@ class ProfileSecurityTest extends TestCase
 
         $response->assertRedirect();
         $this->assertTrue(Hash::check('NewPassword1!', $user->fresh()->password));
-        $this->assertDatabaseCount('otp_devices', 0);
     }
 
     public function test_student_password_change_rejects_weak_password(): void

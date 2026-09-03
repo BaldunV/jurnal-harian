@@ -1253,8 +1253,8 @@
                 { name: 'Beribadah', status: j.beribadah, icon: '@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-6 h-6'])', note: formatPrayerDetails(j.ibadah_details) },
                 { name: 'Berolahraga', status: j.berolahraga, icon: '@include('partials.icon', ['name' => 'footprints', 'class' => 'w-6 h-6'])', note: j.olahraga_note, photo: j.olahraga_photo_url },
                 { name: 'Makan Sehat', status: j.makan_sehat, icon: '@include('partials.icon', ['name' => 'salad', 'class' => 'w-6 h-6'])', note: j.makan_note, photo: j.makan_photo_url },
-                { name: 'Gemar Belajar', status: j.gemar_belajar, icon: '@include('partials.icon', ['name' => 'book-open', 'class' => 'w-6 h-6'])', note: j.belajar_note },
-                { name: 'Bermasyarakat', status: j.bermasyarakat, icon: '@include('partials.icon', ['name' => 'handshake', 'class' => 'w-6 h-6'])', note: j.masyarakat_note },
+                { name: 'Gemar Belajar', status: j.gemar_belajar, icon: '@include('partials.icon', ['name' => 'book-open', 'class' => 'w-6 h-6'])', note: j.belajar_note, photo: j.belajar_photo_url },
+                { name: 'Bermasyarakat', status: j.bermasyarakat, icon: '@include('partials.icon', ['name' => 'handshake', 'class' => 'w-6 h-6'])', note: j.masyarakat_note, photo: j.masyarakat_photo_url },
                 { name: 'Tidur Cepat', status: j.tidur_cepat, icon: '@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-6 h-6'])', note: j.tidur_note },
             ];
 
@@ -1569,34 +1569,112 @@
 
         setPhotoState(type, 'uploading');
 
-        const prop = type === 'olahraga' ? 'olahragaPhoto' : 'makanPhoto';
-        const method = type === 'olahraga' ? 'saveOlahragaPhoto' : 'saveMakanPhoto';
+        const photoConfig = {
+            olahraga: {
+                prop: 'olahragaPhoto',
+                save: 'saveOlahragaPhoto',
+                remove: 'removeOlahragaPhoto'
+            },
+            makan: {
+                prop: 'makanPhoto',
+                save: 'saveMakanPhoto',
+                remove: 'removeMakanPhoto'
+            },
+            belajar: {
+                prop: 'belajarPhoto',
+                save: 'saveBelajarPhoto',
+                remove: 'removeBelajarPhoto'
+            },
+            masyarakat: {
+                prop: 'masyarakatPhoto',
+                save: 'saveMasyarakatPhoto',
+                remove: 'removeMasyarakatPhoto'
+            }
+        };
 
-        comp.upload(prop, file)
-            .then(function () { return comp.call(method); })
-            .then(function (res) {
-                if (res && res.success) {
-                    setPhotoState(type, 'preview', res.photo_url);
-                } else if (res && res.is_locked) {
-                    alert(res.message);
-                    setPhotoState(type, 'empty');
-                } else {
-                    setPhotoState(type, 'empty');
-                }
-            })
-            .catch(function () {
-                alert('Gagal mengunggah foto. Periksa koneksi lalu coba lagi.');
+        const config = photoConfig[type];
+
+        if (!config) {
+            alert('Jenis foto tidak dikenali.');
+            return;
+        }
+
+        const prop = config.prop;
+        const method = config.save;
+
+        comp.upload(
+            prop,
+            file,
+
+            // Upload sementara Livewire berhasil
+            function () {
+                comp.call(method)
+                    .then(function (res) {
+                        if (res && res.success) {
+                            setPhotoState(
+                                type,
+                                'preview',
+                                res.photo_url
+                            );
+                        } else if (res && res.is_locked) {
+                            alert(res.message);
+                            setPhotoState(type, 'empty');
+                        } else {
+                            alert('Foto gagal disimpan.');
+                            setPhotoState(type, 'empty');
+                        }
+                    })
+                    .catch(function (error) {
+                        console.error('Save photo error:', error);
+
+                        alert(
+                            'Foto berhasil diunggah sementara, ' +
+                            'tetapi gagal disimpan.'
+                        );
+
+                        setPhotoState(type, 'empty');
+                    })
+                    .finally(function () {
+                        input.value = '';
+                    });
+            },
+
+            // Upload Livewire gagal
+            function () {
+                alert('Gagal mengunggah foto. Coba lagi.');
                 setPhotoState(type, 'empty');
-            })
-            .finally(function () {
                 input.value = '';
-            });
+            },
+
+            // Progress upload
+            function (event) {
+                console.log(
+                    'Upload ' + type + ': ' +
+                    event.detail.progress + '%'
+                );
+            }
+        );
     }
 
     function removePhoto(type) {
         const comp = getJournalComponent();
         if (!comp) return;
-        comp.call(type === 'olahraga' ? 'removeOlahragaPhoto' : 'removeMakanPhoto')
+
+        const photoConfig = {
+            olahraga: 'removeOlahragaPhoto',
+            makan: 'removeMakanPhoto',
+            belajar: 'removeBelajarPhoto',
+            masyarakat: 'removeMasyarakatPhoto'
+        };
+
+        const method = photoConfig[type];
+
+        if (!method) {
+            alert('Jenis foto tidak dikenali.');
+            return;
+        }
+
+        comp.call(method)
             .then(function (res) {
                 if (res && res.success) {
                     setPhotoState(type, 'empty');

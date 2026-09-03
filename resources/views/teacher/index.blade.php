@@ -206,6 +206,8 @@
                     const photos = [];
                     if (j.olahraga_photo_url) photos.push(j.olahraga_photo_url);
                     if (j.makan_photo_url) photos.push(j.makan_photo_url);
+                    if (j.belajar_photo_url) photos.push(j.belajar_photo_url);
+                    if (j.masyarakat_photo_url) photos.push(j.masyarakat_photo_url);
                     html += `
                         <div class="p-3 rounded-xl border border-slate-200/80 dark:border-slate-600 text-xs flex items-center justify-between">
                             <div>

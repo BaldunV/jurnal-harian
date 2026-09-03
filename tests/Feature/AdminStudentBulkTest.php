@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\OtpDevice;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -42,59 +41,6 @@ class AdminStudentBulkTest extends TestCase
         $saved = User::where('nis', '1001')->first();
         $this->assertNotSame('password123', $saved->password);
         $this->assertTrue(Hash::check('password123', $saved->password));
-    }
-
-    public function test_bulk_store_normalizes_phone_and_saves_otp_channel(): void
-    {
-        $response = $this->actingAs($this->admin())->postJson('/admin/students/bulk', [
-            'kelas' => 'X PPLG',
-            'rows' => [
-                [
-                    'name' => 'Dewi',
-                    'nis' => '1005',
-                    'password' => 'password123',
-                    'phone' => '081234567890',
-                    'otp_channel' => 'sms',
-                ],
-            ],
-        ]);
-
-        $response->assertOk()->assertJson(['success' => 1, 'failed' => []]);
-        $this->assertDatabaseHas('users', [
-            'nis' => '1005',
-            'phone' => '+6281234567890',
-            'otp_channel' => 'sms',
-        ]);
-    }
-
-    public function test_admin_update_replaces_otp_settings_and_revokes_trusted_devices(): void
-    {
-        $student = User::create([
-            'nis' => '1006',
-            'name' => 'Eko',
-            'password' => Hash::make('password123'),
-            'role' => 'siswa',
-            'phone' => '081111111111',
-            'otp_channel' => 'whatsapp',
-        ]);
-        OtpDevice::create([
-            'user_id' => $student->id,
-            'token_hash' => hash('sha256', 'trusted-device'),
-            'expires_at' => now()->addDays(10),
-        ]);
-
-        $response = $this->actingAs($this->admin())->patch(route('admin.students.update', $student), [
-            'phone' => '081222222222',
-            'otp_channel' => 'sms',
-        ]);
-
-        $response->assertRedirect();
-        $this->assertDatabaseHas('users', [
-            'id' => $student->id,
-            'phone' => '+6281222222222',
-            'otp_channel' => 'sms',
-        ]);
-        $this->assertDatabaseCount('otp_devices', 0);
     }
 
     public function test_bulk_store_rejects_duplicate_nis_and_invalid_rows(): void

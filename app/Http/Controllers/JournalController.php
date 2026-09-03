@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Journal;
 use App\Models\User;
-use App\Services\OtpService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -314,7 +313,6 @@ class JournalController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
-        app(OtpService::class)->revokeTrustedDevices($user);
         $user->tokens()->delete();
 
         return redirect()->back()->with('success', 'Password berhasil diubah!');

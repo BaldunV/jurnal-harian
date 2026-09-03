@@ -48,7 +48,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     return AuthScaffold(
       title: 'Masuk ke jurnalmu',
-      description: 'Gunakan NIS dan password akun sekolah. Setelah datamu cocok, kami akan mengirim kode OTP.',
+      description: 'Gunakan NIS dan password akun sekolah.',
       background: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -158,7 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Akses khusus siswa. Password tidak disimpan dan setiap login dikonfirmasi dengan OTP.',
+                      'Akses khusus siswa. Password tidak disimpan.',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),

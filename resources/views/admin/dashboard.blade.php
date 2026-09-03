@@ -10,7 +10,7 @@
             <div>
                 <div class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-emerald-100 mb-2">@include('partials.icon', ['name' => 'shield-check', 'class' => 'w-3.5 h-3.5 inline-block mr-1']) Panel Admin</div>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">{{ $isRegisteredView ? 'Siswa Terdaftar' : 'Rekap PAN Siswa' }}</h1>
-                <p class="text-sm text-emerald-50/80 mt-1 max-w-2xl">{{ $isRegisteredView ? 'Kelola data siswa, akses masuk, dan kanal OTP dari satu tempat.' : 'Pantau ritme pengisian jurnal dan capaian kebiasaan seluruh siswa.' }}</p>
+                <p class="text-sm text-emerald-50/80 mt-1 max-w-2xl">{{ $isRegisteredView ? 'Kelola data dan akses masuk siswa dari satu tempat.' : 'Pantau ritme pengisian jurnal dan capaian kebiasaan seluruh siswa.' }}</p>
             </div>
             <nav class="admin-view-switcher self-start lg:self-auto" aria-label="Tampilan admin">
                 <a href="{{ route('admin.dashboard') }}" wire:navigate @if(!$isRegisteredView) aria-current="page" @endif>
@@ -20,6 +20,10 @@
                 <a href="{{ route('admin.dashboard', ['view' => 'registered']) }}#daftar-siswa-terdaftar" wire:navigate @if($isRegisteredView) aria-current="page" @endif>
                     @include('partials.icon', ['name' => 'user-check', 'class' => 'w-3.5 h-3.5'])
                     Siswa terdaftar
+                </a>
+                <a href="{{ route('admin.documentation') }}" wire:navigate>
+                    @include('partials.icon', ['name' => 'images', 'class' => 'w-3.5 h-3.5'])
+                    Dokumentasi
                 </a>
             </nav>
         </div>
@@ -101,8 +105,6 @@
                         <th class="py-3 px-4">Nama Siswa</th>
                         <th class="py-3 px-4">NIS</th>
                         <th class="py-3 px-4">Password</th>
-                        <th class="py-3 px-4">No. HP OTP</th>
-                        <th class="py-3 px-4">Kanal OTP</th>
                         <th class="py-3 px-4 w-16 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -124,7 +126,7 @@
         <div id="import-dropzone" class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/5 transition-colors">
             <div class="text-slate-400 dark:text-slate-500 mx-auto mb-2">@include('partials.icon', ['name' => 'cloud-fog', 'class' => 'w-8 h-8'])</div>
             <p class="text-xs font-bold text-slate-600 dark:text-slate-300">Klik untuk pilih file Excel (.xlsx) atau CSV</p>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password | No HP | Kanal OTP</strong> &mdash; kanal bisa <strong>whatsapp</strong> atau <strong>sms</strong>.</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password</strong>.</p>
         </div>
         <div id="import-loading" class="hidden p-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Memproses file&hellip;</div>
         <div id="import-preview" class="hidden mt-4">
@@ -142,8 +144,6 @@
                             <th class="py-3 px-4">Nama Siswa</th>
                             <th class="py-3 px-4">NIS</th>
                             <th class="py-3 px-4">Password</th>
-                            <th class="py-3 px-4">No. HP OTP</th>
-                            <th class="py-3 px-4">Kanal OTP</th>
                             <th class="py-3 px-4 w-40">Status</th>
                         </tr>
                     </thead>
@@ -218,7 +218,6 @@
                     <th class="py-3.5 px-4">Nama Siswa</th>
                     <th class="py-3.5 px-4">Kelas</th>
                     <th class="py-3.5 px-4">Email</th>
-                    <th class="py-3.5 px-4">Nomor HP & Kanal OTP</th>
                     <th class="py-3.5 px-4">Terdaftar</th>
                 </tr>
             </thead>
@@ -230,29 +229,11 @@
                         <td data-label="Nama" class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{{ $student->name }}</td>
                         <td data-label="Kelas" class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-bold">{{ $student->kelas }}</span></td>
                         <td data-label="Email" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ $student->email ?: '—' }}</td>
-                        <td data-label="Nomor HP & OTP" class="py-3.5 px-4">
-                                <form action="{{ route('admin.students.update', $student) }}" method="POST" class="admin-otp-form flex min-w-[330px] items-center gap-1.5">
-                                @csrf
-                                @method('PATCH')
-                                <input type="tel" name="phone" value="{{ $student->phone }}" placeholder="08xxxxxxxxxx" inputmode="tel"
-                                    class="w-36 px-2.5 py-2 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                <select name="otp_channel" class="w-24 px-2 py-2 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-[11px] font-bold focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                    <option value="whatsapp" @selected(($student->otp_channel ?: 'whatsapp') === 'whatsapp')>WhatsApp</option>
-                                    <option value="sms" @selected($student->otp_channel === 'sms')>SMS</option>
-                                </select>
-                                <button type="submit" class="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-50 dark:bg-primary-500/15 text-primary-600 dark:text-primary-300 hover:bg-primary-100 dark:hover:bg-primary-500/25" title="Simpan pengaturan OTP">
-                                    @include('partials.icon', ['name' => 'save', 'class' => 'w-3.5 h-3.5'])
-                                </button>
-                            </form>
-                            @if(!$student->phone)
-                                <span class="block mt-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">OTP belum aktif</span>
-                            @endif
-                        </td>
                         <td data-label="Terdaftar" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ optional($student->created_at)->translatedFormat('d M Y, H:i') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang terdaftar pada kelas ini.</td>
+                        <td colspan="6" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang terdaftar pada kelas ini.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -344,14 +325,11 @@
         const tr = document.createElement('tr');
         tr.setAttribute('data-row', '');
         tr.className = 'bg-white dark:bg-slate-800/60';
-        const channel = data.otp_channel === 'sms' ? 'sms' : 'whatsapp';
         tr.innerHTML = `
             <td class="py-2.5 px-4"><span class="row-no font-bold text-slate-400 dark:text-slate-500"></span></td>
             <td class="py-2.5 px-4"><input type="text" name="name" value="${escapeHtml(data.name || '')}" placeholder="Nama lengkap siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
             <td class="py-2.5 px-4"><input type="text" name="nis" value="${escapeHtml(data.nis || '')}" placeholder="Nomor Induk Siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
             <td class="py-2.5 px-4"><input type="text" name="password" value="${escapeHtml(data.password || '')}" placeholder="Minimal 6 karakter" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
-            <td class="py-2.5 px-4"><input type="tel" name="phone" value="${escapeHtml(data.phone || '')}" placeholder="08xxxxxxxxxx" inputmode="tel" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
-            <td class="py-2.5 px-4"><select name="otp_channel" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500"><option value="whatsapp" ${channel === 'whatsapp' ? 'selected' : ''}>WhatsApp</option><option value="sms" ${channel === 'sms' ? 'selected' : ''}>SMS</option></select></td>
             <td class="py-2.5 px-4 text-center">
                 <button type="button" class="btn-del-row inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/15 transition-colors" title="Hapus baris">${iconSvg('<path d="M18 6 6 18" /><path d="m6 6 12 12" />')}</button>
             </td>`;
@@ -370,8 +348,6 @@
                 name: inputs[0].value.trim(),
                 nis: inputs[1].value.trim(),
                 password: inputs[2].value,
-                phone: inputs[3].value.trim(),
-                otp_channel: tr.querySelector('select[name="otp_channel"]').value,
             };
         });
     }
@@ -486,8 +462,6 @@
                 <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.name) || '—'}</td>
                 <td class="py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.nis) || '—'}</td>
                 <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${row.password ? '••••••' : '—'}</td>
-                <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${escapeHtml(row.phone) || '—'}</td>
-                <td class="py-3 px-4 text-slate-500 dark:text-slate-400 uppercase">${escapeHtml(row.otp_channel || 'whatsapp')}</td>
                 <td class="py-3 px-4">${chip}${reason}</td>`;
             previewRows.appendChild(tr);
         });
@@ -501,8 +475,6 @@
             name: row.name,
             nis: row.nis,
             password: row.password,
-            phone: row.phone,
-            otp_channel: row.otp_channel,
         }));
 
         if (!kelas) {

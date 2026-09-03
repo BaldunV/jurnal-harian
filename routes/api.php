@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(HandleApiExceptions::class)->group(function (): void {
     Route::prefix('auth')->group(function (): void {
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:mobile-login');
-        Route::post('/otp/verify', [AuthController::class, 'verifyOtp'])->middleware('throttle:mobile-otp');
-        Route::post('/otp/resend', [AuthController::class, 'resendOtp'])->middleware('throttle:mobile-otp-resend');
     });
 
     Route::middleware(['auth:sanctum', 'abilities:student', 'role:siswa', 'throttle:mobile-api'])
@@ -31,10 +29,10 @@ Route::middleware(HandleApiExceptions::class)->group(function (): void {
                     ->whereNumber('journal');
                 Route::post('/journals/{journal}/photos/{type}', [JournalController::class, 'uploadPhoto'])
                     ->whereNumber('journal')
-                    ->whereIn('type', ['olahraga', 'makan']);
+                    ->whereIn('type', ['olahraga', 'makan', 'belajar', 'masyarakat']);
                 Route::get('/journals/{journal}/photos/{type}', [JournalController::class, 'photo'])
                     ->whereNumber('journal')
-                    ->whereIn('type', ['olahraga', 'makan'])
+                    ->whereIn('type', ['olahraga', 'makan', 'belajar', 'masyarakat'])
                     ->name('api.me.journals.photos.show');
 
                 Route::get('/statistics', [StatisticsController::class, 'show']);

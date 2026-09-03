@@ -11,7 +11,6 @@ void main() {
       'role': 'siswa',
       'worship_type': 'islam',
       'profile_photo_url': 'https://api.example.sch.id/api/me/profile/photo',
-      'phone': 'must be ignored',
     });
 
     expect(student.id, 12);

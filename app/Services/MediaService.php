@@ -161,6 +161,8 @@ class MediaService
         return match ($type) {
             'olahraga' => 'olahraga_photo',
             'makan' => 'makan_photo',
+            'belajar' => 'belajar_photo',
+            'masyarakat' => 'masyarakat_photo',
             default => throw new ApiException('Jenis foto tidak ditemukan.', 404, 'not_found'),
         };
     }

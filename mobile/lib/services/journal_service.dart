@@ -80,6 +80,8 @@ class JournalService {
       'photo_url',
       'olahraga_photo_url',
       'makan_photo_url',
+      'belajar_photo_url',
+      'masyarakat_photo_url',
     ]) {
       final value = data[key];
       if (value is String && value.isNotEmpty) {

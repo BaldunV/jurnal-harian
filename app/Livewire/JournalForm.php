@@ -21,6 +21,10 @@ class JournalForm extends Component
 
     public $makanPhoto;
 
+    public $belajarPhoto;
+
+    public $masyarakatPhoto;
+
     public function mount(Journal $journal, User $user)
     {
         $this->journal = $journal;
@@ -54,7 +58,10 @@ class JournalForm extends Component
             $property.'.max' => 'Ukuran foto maksimal 5 MB.',
         ]);
 
-        $relativePath = 'journals/'.$journal->date->toDateString().'/'.$filename;
+        $relativePath = 'journals/'
+            .$journal->user_id.'/'
+            .$journal->date->toDateString().'/'
+            .$filename;
 
         // Hapus foto lama sebelum ganti
         if ($journal->{$column}) {
@@ -92,6 +99,36 @@ class JournalForm extends Component
     public function removeMakanPhoto()
     {
         return $this->removePhoto('makan_photo');
+    }
+
+    public function saveBelajarPhoto()
+    {
+        return $this->storePhoto(
+            $this->belajarPhoto,
+            'belajarPhoto',
+            'belajar_photo',
+            'belajar.jpg'
+        );
+    }
+
+    public function removeBelajarPhoto()
+    {
+        return $this->removePhoto('belajar_photo');
+    }
+
+    public function saveMasyarakatPhoto()
+    {
+        return $this->storePhoto(
+            $this->masyarakatPhoto,
+            'masyarakatPhoto',
+            'masyarakat_photo',
+            'masyarakat.jpg'
+        );
+    }
+
+    public function removeMasyarakatPhoto()
+    {
+        return $this->removePhoto('masyarakat_photo');
     }
 
     protected function removePhoto(string $column): array

@@ -28,8 +28,14 @@ class JournalResource extends JsonResource
                 : null,
             'gemar_belajar' => $this->gemar_belajar,
             'belajar_note' => $this->belajar_note,
+            'belajar_photo_url' => $this->belajar_photo
+                ? route('api.me.journals.photos.show', [$this->id, 'belajar'])
+                : null,
             'bermasyarakat' => $this->bermasyarakat,
             'masyarakat_note' => $this->masyarakat_note,
+            'masyarakat_photo_url' => $this->masyarakat_photo
+                ? route('api.me.journals.photos.show', [$this->id, 'masyarakat'])
+                : null,
             'tidur_cepat' => $this->tidur_cepat,
             'tidur_note' => $this->time($this->tidur_note),
             'completed_count' => $this->completed_count,

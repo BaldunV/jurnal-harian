@@ -392,7 +392,6 @@
     }
 
     .admin-student-table tbody td[data-label='Nama'],
-    .admin-student-table tbody td[data-label='Nomor HP & OTP'],
     .admin-student-table tbody td[data-label='Terdaftar'] {
         grid-column: 1 / -1;
     }
@@ -400,35 +399,6 @@
     .admin-student-table tbody td[data-label='Nama'] {
         padding-bottom: 0.6rem;
         font-size: 0.875rem;
-    }
-
-    .admin-student-table tbody td[data-label='Nomor HP & OTP'] {
-        align-items: stretch;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding-top: 0.75rem;
-        border-top: 1px dashed rgba(148, 163, 184, 0.35);
-    }
-
-    .admin-student-table tbody td[data-label='Nomor HP & OTP']::before {
-        align-self: flex-start;
-    }
-
-    .admin-otp-form {
-        width: 100%;
-        min-width: 0 !important;
-        flex-wrap: wrap;
-    }
-
-    .admin-otp-form input {
-        flex: 1 1 9rem;
-        width: auto !important;
-        min-width: 0;
-    }
-
-    .admin-otp-form select {
-        flex: 0 1 7rem;
-        width: auto !important;
     }
 }
 
