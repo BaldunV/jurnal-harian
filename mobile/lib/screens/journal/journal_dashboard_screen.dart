@@ -37,167 +37,170 @@ class _JournalDashboardScreenState
     final firstName = widget.student.name.trim().split(RegExp(r'\s+')).first;
     final completed = journal?.completed ?? 0;
     final isLocked = journal?.isSubmitted ?? false;
+    final streak = _computeStreak(state.history);
+    final dateLabel = today != null && today.date.isNotEmpty
+        ? AppDateFormat.hariTanggal(_parseDate(today.date))
+        : 'Memuat tanggal sekolah…';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(journalControllerProvider.notifier).load(),
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
-          children: [
-            _HeroBanner(
-              firstName: firstName,
-              dateLabel: today != null && today.date.isNotEmpty
-                  ? AppDateFormat.hariTanggal(_parseDate(today.date))
-                  : 'Memuat tanggal sekolah…',
-              streak: _computeStreak(state.history),
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            if (state.isLoadingToday && journal == null)
-              StateViews.loading(message: 'Memuat jurnal hari ini…')
-            else if (state.error != null && journal == null)
-              StateViews.error(
-                context,
-                state.error!,
-                () => ref.read(journalControllerProvider.notifier).load(),
-              )
-            else
-              _ProgressCard(
-                completed: completed,
-                total: Habits.total,
-                isSubmitted: journal?.isSubmitted ?? false,
-                dateLabel: today != null && today.date.isNotEmpty
-                    ? _parseDate(today.date)
-                    : DateTime.now(),
-              ),
-            const SizedBox(height: AppSpacing.lg),
-            _QuickStats(
-              streak: _computeStreak(state.history),
-              history: state.history,
-              percent: journal != null
-                  ? (completed / Habits.total * 100).round()
-                  : 0,
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            const SectionKicker('Tujuh Kebiasaan'),
-            const SizedBox(height: AppSpacing.md),
-            if (journal != null)
-              ...Habits.all.map(
-                (habit) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.md),
-                  child: HabitCheckCard(
-                    habit: habit,
-                    done: _habitValue(journal, habit.key),
-                    time: _habitTime(journal, habit.key),
-                    note: _habitNote(journal, habit.key),
-                    enabled: false,
-                    onChanged: (_) => _openForm(journal),
+      body: SafeArea(
+        bottom: false,
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: RefreshIndicator(
+              onRefresh: () =>
+                  ref.read(journalControllerProvider.notifier).load(),
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+                children: [
+                  _HeroBanner(
+                    firstName: firstName,
+                    className: widget.student.className,
+                    dateLabel: dateLabel,
+                    streak: streak,
                   ),
-                ),
-              )
-            else
-              AppCard(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Column(
-                    children: [
-                      const Icon(
-                        LucideIcons.listChecks,
-                        size: 40,
-                        color: Color(0xFFBBCABF),
+                  const SizedBox(height: AppSpacing.lg),
+                  if (state.isLoadingToday && journal == null)
+                    StateViews.loading(message: 'Memuat jurnal hari ini…')
+                  else if (state.error != null && journal == null)
+                    StateViews.error(
+                      context,
+                      state.error!,
+                      () => ref.read(journalControllerProvider.notifier).load(),
+                    )
+                  else ...[
+                    _ProgressCard(
+                      completed: completed,
+                      total: Habits.total,
+                      isSubmitted: journal?.isSubmitted ?? false,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    GradientButton(
+                      key: const Key('open_journal_form_button'),
+                      label: journal == null
+                          ? 'Mulai isi jurnal hari ini'
+                          : isLocked
+                          ? 'Lihat jurnal hari ini'
+                          : 'Lanjutkan jurnal hari ini',
+                      icon: journal == null
+                          ? LucideIcons.plus
+                          : isLocked
+                          ? LucideIcons.eye
+                          : LucideIcons.pencil,
+                      onPressed: () => _openTodayJournal(journal),
+                    ),
+                  ],
+                  const SizedBox(height: AppSpacing.lg),
+                  _QuickStats(
+                    streak: streak,
+                    history: state.history,
+                    percent: journal != null
+                        ? (completed / Habits.total * 100).round()
+                        : 0,
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const SectionKicker('Tujuh Kebiasaan'),
+                  const SizedBox(height: AppSpacing.md),
+                  if (journal != null)
+                    ...Habits.all.map(
+                      (habit) => Padding(
+                        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                        child: HabitCheckCard(
+                          habit: habit,
+                          done: _habitValue(journal, habit.key),
+                          time: _habitTime(journal, habit.key),
+                          note: _habitNote(journal, habit.key),
+                          enabled: !isLocked,
+                          onTap: () => _openTodayJournal(journal),
+                          onChanged: (_) => _openForm(journal),
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Belum ada catatan untuk hari ini. Tandai ketujuh kebiasaan untuk menyelesaikan jurnal harianmu.',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: const Color(0xFF505F76),
-                          height: 1.5,
+                    )
+                  else
+                    AppCard(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          children: [
+                            Icon(
+                              LucideIcons.listChecks,
+                              size: 40,
+                              color: Theme.of(context).colorScheme.primary
+                                  .withValues(alpha: 0.6),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Belum ada catatan hari ini. Mulai jurnal dan tandai kebiasaan yang sudah kamu lakukan.',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: AppSpacing.xl),
+                  const SectionKicker('Konsistensi 7 Hari'),
+                  const SizedBox(height: AppSpacing.md),
+                  AppCard(
+                    child: WeekHeatmap(
+                      cells: _heatCells(state.history),
+                      onTap: _onHeatCellTap,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SectionKicker('Riwayat Terisi'),
+                      TextButton(
+                        onPressed: _openHistory,
+                        style: TextButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 6,
+                          ),
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('Lihat semua'),
+                            SizedBox(width: 4),
+                            Icon(LucideIcons.arrowRight, size: 15),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-              ),
-            const SizedBox(height: AppSpacing.xl),
-            const SectionKicker('Konsistensi 7 Hari'),
-            const SizedBox(height: AppSpacing.md),
-            AppCard(
-              child: WeekHeatmap(
-                cells: _heatCells(state.history),
-                onTap: _onHeatCellTap,
+                  const SizedBox(height: AppSpacing.md),
+                  _RecentHistory(history: state.history),
+                ],
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const SectionKicker('Riwayat Terisi'),
-                TextButton(
-                  onPressed: () => _openHistory(),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Lihat semua',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: AppColors.primary600,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                      const SizedBox(width: 2),
-                      const Icon(
-                        LucideIcons.arrowRight,
-                        size: 14,
-                        color: AppColors.primary600,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            _RecentHistory(history: state.history),
-            const SizedBox(height: AppSpacing.lg),
-            GradientButton(
-              key: const Key('open_journal_form_button'),
-              label: journal == null
-                  ? 'Isi jurnal hari ini'
-                  : isLocked
-                  ? 'Lihat jurnal hari ini'
-                  : 'Perbarui jurnal hari ini',
-              icon: journal == null
-                  ? LucideIcons.plus
-                  : isLocked
-                  ? LucideIcons.eye
-                  : LucideIcons.pencil,
-              onPressed: () {
-                if (journal == null) {
-                  _openForm(null);
-                  return;
-                }
-
-                if (isLocked && journal.id != 0) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute<dynamic>(
-                      builder: (_) => JournalDetailScreen(id: journal.id),
-                    ),
-                  );
-                  return;
-                }
-
-                _openForm(journal);
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
+  }
+
+  void _openTodayJournal(Journal? journal) {
+    if (journal == null) {
+      _openForm(null);
+      return;
+    }
+
+    if (journal.isSubmitted && journal.id != 0) {
+      Navigator.of(context).push(
+        MaterialPageRoute<dynamic>(
+          builder: (_) => JournalDetailScreen(id: journal.id),
+        ),
+      );
+      return;
+    }
+
+    _openForm(journal);
   }
 
   void _openForm(Journal? journal) {
@@ -303,91 +306,197 @@ List<HeatCell> _heatCells(List<Journal> history) {
 class _HeroBanner extends StatelessWidget {
   const _HeroBanner({
     required this.firstName,
+    required this.className,
     required this.dateLabel,
     required this.streak,
   });
 
   final String firstName;
+  final String className;
   final String dateLabel;
   final int streak;
 
   @override
   Widget build(BuildContext context) {
-    final dateValue = DateTime.tryParse(dateLabel);
     return Container(
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFBBCABF).withValues(alpha: 0.25),
-        ),
-        boxShadow: [
+        gradient: AppGradients.morningMesh,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+        boxShadow: <BoxShadow>[
           BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppColors.primary700.withValues(alpha: 0.25),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          Positioned(
+            top: -54,
+            right: -24,
+            child: Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.07),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -56,
+            left: -36,
+            child: Container(
+              width: 130,
+              height: 130,
+              decoration: BoxDecoration(
+                color: AppColors.amber.withValues(alpha: 0.09),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.xl),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      'Halo, $firstName 👋',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF131B2E),
+                    Container(
+                      width: 46,
+                      height: 46,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(AppRadius.md),
+                        boxShadow: <BoxShadow>[
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 14,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Image.asset(
+                        'assets/images/logo.png',
+                        semanticLabel: 'Logo SMK BPPI',
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      AppDateFormat.hariTanggal(dateValue ?? DateTime.now()),
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF505F76),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'JURNAL 7 KEBIASAAN',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: Colors.white.withValues(alpha: 0.74),
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.2,
+                                ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'SMK BPPI',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
+                const SizedBox(height: AppSpacing.xl),
+                Text(
+                  'Halo, $firstName 👋',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontFamily: AppTypography.displayFont,
+                    color: Colors.white,
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFDDB8),
-                  borderRadius: BorderRadius.circular(999),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  'Satu langkah kecil untuk kebiasaan yang lebih baik.',
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Colors.white.withValues(alpha: 0.82)),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                const SizedBox(height: AppSpacing.lg),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
                   children: [
-                    const Icon(
-                      LucideIcons.flame,
-                      size: 16,
-                      color: Color(0xFFE29100),
+                    _HeroPill(icon: LucideIcons.calendarDays, label: dateLabel),
+                    _HeroPill(
+                      icon: LucideIcons.flame,
+                      label: '$streak hari beruntun',
+                      emphasized: streak > 0,
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$streak Hari Streak!',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF523200),
-                      ),
-                    ),
+                    if (className.isNotEmpty)
+                      _HeroPill(icon: LucideIcons.school, label: className),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroPill extends StatelessWidget {
+  const _HeroPill({
+    required this.icon,
+    required this.label,
+    this.emphasized = false,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool emphasized;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: emphasized
+            ? AppColors.amber.withValues(alpha: 0.20)
+            : Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        border: Border.all(
+          color: emphasized
+              ? AppColors.amber.withValues(alpha: 0.32)
+              : Colors.white.withValues(alpha: 0.13),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: emphasized ? const Color(0xFFFDE68A) : Colors.white,
+          ),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
           ),
         ],
       ),
@@ -400,96 +509,131 @@ class _ProgressCard extends StatelessWidget {
     required this.completed,
     required this.total,
     required this.isSubmitted,
-    required this.dateLabel,
   });
 
   final int completed;
   final int total;
   final bool isSubmitted;
-  final DateTime dateLabel;
 
   @override
   Widget build(BuildContext context) {
-    final percent = total == 0 ? 0.0 : (completed / total).clamp(0.0, 1.0);
+    final colors = Theme.of(context).colorScheme;
+    final percent = total == 0
+        ? 0.0
+        : (completed / total).clamp(0.0, 1.0).toDouble();
     final isComplete = percent >= 1;
+    final statusLabel = isSubmitted
+        ? 'Terkunci'
+        : isComplete
+        ? 'Sempurna!'
+        : 'Belum dikirim';
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFBBCABF).withValues(alpha: 0.25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(16),
+    return AppCard(
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: AppGradients.primary,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: const Icon(
+                  LucideIcons.listChecks,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$completed',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: Color(0xFF131B2E),
-                      ),
+                      'Progres hari ini',
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w800),
                     ),
                     Text(
-                      'dari $total kebiasaan',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF505F76),
-                      ),
+                      isComplete
+                          ? 'Semua kebiasaan sudah tercatat.'
+                          : '${total - completed} kebiasaan lagi untuk selesai.',
+                      style: Theme.of(context).textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
               Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
+                  horizontal: 10,
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: isSubmitted
-                      ? const Color(0xFFD1FAE5)
-                      : isComplete
-                      ? const Color(0xFFD1FAE5)
-                      : const Color(0xFFDAE2FD),
-                  borderRadius: BorderRadius.circular(999),
+                  color: isComplete || isSubmitted
+                      ? colors.primaryContainer
+                      : colors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
                 ),
                 child: Text(
-                  isSubmitted
-                      ? 'Terkunci'
-                      : isComplete
-                      ? 'Sempurna!'
-                      : 'Belum dikirim',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                  statusLabel,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: isSubmitted
-                        ? const Color(0xFF006C49)
+                        ? colors.onPrimaryContainer
                         : isComplete
-                        ? const Color(0xFF006C49)
-                        : const Color(0xFF3C4A42),
+                        ? colors.onPrimaryContainer
+                        : colors.onSecondaryContainer,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          _HorizontalProgress(value: percent, isComplete: isComplete),
+          const SizedBox(height: AppSpacing.lg),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '$completed',
+                style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: colors.onSurface,
+                  fontSize: 38,
+                  height: 1,
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 5, bottom: 2),
+                  child: Text(
+                    'dari $total kebiasaan',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${(percent * 100).round()}%',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Semantics(
+            label:
+                '$completed dari $total kebiasaan selesai, ${(percent * 100).round()} persen',
+            child: _HorizontalProgress(value: percent),
+          ),
         ],
       ),
     );
@@ -498,10 +642,9 @@ class _ProgressCard extends StatelessWidget {
 
 /// Horizontal progress bar: solid emerald fill on a subtle slate track.
 class _HorizontalProgress extends StatelessWidget {
-  const _HorizontalProgress({required this.value, required this.isComplete});
+  const _HorizontalProgress({required this.value});
 
   final double value;
-  final bool isComplete;
 
   @override
   Widget build(BuildContext context) {
@@ -531,7 +674,10 @@ class _HorizontalProgress extends StatelessWidget {
                   height: 8,
                   width: constraints.maxWidth * value,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF006C49),
+                    gradient: value > 0 ? AppGradients.primary : null,
+                    color: value > 0
+                        ? null
+                        : Theme.of(context).colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(999),
                   ),
                 ),
@@ -565,6 +711,7 @@ class _QuickStats extends StatelessWidget {
             icon: LucideIcons.zap,
             value: '$streak',
             label: 'Streak',
+            color: AppColors.amber,
           ),
         ),
         const SizedBox(width: 12),
@@ -573,6 +720,7 @@ class _QuickStats extends StatelessWidget {
             icon: LucideIcons.calendarDays,
             value: '$days',
             label: 'Hari isi',
+            color: AppColors.teal,
           ),
         ),
         const SizedBox(width: 12),
@@ -580,7 +728,8 @@ class _QuickStats extends StatelessWidget {
           child: _SummaryCard(
             icon: LucideIcons.circleGauge,
             value: '$percent%',
-            label: 'Total',
+            label: 'Hari ini',
+            color: AppColors.primary500,
           ),
         ),
       ],
@@ -593,51 +742,56 @@ class _SummaryCard extends StatelessWidget {
     required this.icon,
     required this.value,
     required this.label,
+    required this.color,
   });
 
   final IconData icon;
   final String value;
   final String label;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
-      height: 108,
-      padding: const EdgeInsets.all(12),
+      height: 104,
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: const Color(0xFFBBCABF).withValues(alpha: 0.25),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 22, color: const Color(0xFF505F76)),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF131B2E),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Icon(icon, size: 17, color: color),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: colors.onSurface,
+              ),
             ),
           ),
-          const SizedBox(height: 2),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF505F76),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: colors.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

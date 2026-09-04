@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 
+import '../../core/theme/design_tokens.dart';
 import '../../providers/auth_flow_provider.dart';
 import '../../providers/interaction_feedback_provider.dart';
 import '../../providers/session_provider.dart';
@@ -47,17 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final auth = ref.watch(authFlowControllerProvider);
 
     return AuthScaffold(
-      title: 'Masuk ke jurnalmu',
-      description: 'Gunakan NIS dan password akun sekolah.',
-      background: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF0FDFA), Color(0xFFFFFFFF)],
-          ),
-        ),
-      ),
+      title: 'Selamat datang',
+      description: 'Masuk untuk melanjutkan kebiasaan baikmu hari ini.',
+      background: const _LoginBackdrop(),
       child: AutofillGroup(
         child: Form(
           key: _formKey,
@@ -147,32 +139,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 onPressed: _submit,
               ),
               const SizedBox(height: 22),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    LucideIcons.shieldCheck,
-                    size: 20,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Akses khusus siswa. Password tidak disimpan.',
-                      style: Theme.of(context).textTheme.bodySmall,
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primaryContainer
+                      .withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      LucideIcons.shieldCheck,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Akses khusus siswa. Password tidak disimpan di perangkat.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
               Center(
-                child: SizedBox(
-                  width: 34,
-                  height: 34,
-                  child: Icon(
-                    LucideIcons.chevronUp,
-                    size: 24,
+                child: Text(
+                  'SMK BPPI  •  Jurnal 7 Kebiasaan',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -240,5 +243,68 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
       _formKey.currentState?.validate();
     }
+  }
+}
+
+class _LoginBackdrop extends StatelessWidget {
+  const _LoginBackdrop();
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: <Color>[
+                colors.surface,
+                colors.primaryContainer.withValues(alpha: isDark ? 0.34 : 0.7),
+                colors.surface,
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          top: -80,
+          right: -70,
+          child: _GlowOrb(
+            size: 230,
+            color: AppColors.teal.withValues(alpha: isDark ? 0.12 : 0.10),
+          ),
+        ),
+        Positioned(
+          bottom: -110,
+          left: -90,
+          child: _GlowOrb(
+            size: 280,
+            color: AppColors.primary500.withValues(alpha: isDark ? 0.13 : 0.09),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _GlowOrb extends StatelessWidget {
+  const _GlowOrb({required this.size, required this.color});
+
+  final double size;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      ),
+    );
   }
 }

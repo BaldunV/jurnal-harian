@@ -127,7 +127,8 @@ abstract final class AppTheme {
         backgroundColor: colors.surface,
         foregroundColor: colors.onSurface,
         elevation: 0,
-        scrolledUnderElevation: 1,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge,
       ),
@@ -180,12 +181,80 @@ abstract final class AppTheme {
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: colors.error, width: 2),
         ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: colors.error, width: 2),
+        ),
+        labelStyle: TextStyle(color: colors.onSurfaceVariant),
+        floatingLabelStyle: TextStyle(
+          color: colors.primary,
+          fontWeight: FontWeight.w700,
+        ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         height: 72,
-        backgroundColor: colors.surfaceContainer,
+        elevation: 0,
+        backgroundColor: colors.surfaceContainerLowest,
         indicatorColor: colors.primaryContainer,
-        labelTextStyle: WidgetStatePropertyAll(textTheme.labelMedium),
+        indicatorShape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        iconTheme: WidgetStateProperty.resolveWith<IconThemeData?>((
+          Set<WidgetState> states,
+        ) {
+          final selected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            size: selected ? 24 : 22,
+            color: selected ? colors.primary : colors.onSurfaceVariant,
+          );
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith<TextStyle?>((
+          Set<WidgetState> states,
+        ) {
+          final selected = states.contains(WidgetState.selected);
+          return textTheme.labelSmall?.copyWith(
+            color: selected ? colors.primary : colors.onSurfaceVariant,
+            fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+          );
+        }),
+      ),
+      navigationRailTheme: NavigationRailThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        indicatorColor: colors.primaryContainer,
+        useIndicator: true,
+      ),
+      dividerTheme: DividerThemeData(
+        color: colors.outlineVariant,
+        thickness: 1,
+        space: 1,
+      ),
+      dialogTheme: DialogThemeData(
+        elevation: 0,
+        backgroundColor: colors.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.xl),
+        ),
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.surfaceContainerLowest,
+        modalBackgroundColor: colors.surfaceContainerLowest,
+        surfaceTintColor: Colors.transparent,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppRadius.xl),
+          ),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colors.inverseSurface,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(
+          color: colors.onInverseSurface,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
       chipTheme: ChipThemeData(
         shape: RoundedRectangleBorder(

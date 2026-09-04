@@ -65,31 +65,63 @@ class AppShell extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth >= 720) {
+            final extendedRail = constraints.maxWidth >= 1040;
             return Scaffold(
               body: SafeArea(
                 child: Row(
                   children: [
-                    NavigationRail(
-                      extended: true,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      selectedIndex: selectedIndex,
-                      onDestinationSelected: (index) =>
-                          ref.read(shellTabProvider.notifier).setTab(index),
-                      leading: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: _RailBrand(),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerLowest,
+                        border: Border(
+                          right: BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
                       ),
-                      destinations: _destinations
-                          .map(
-                            (destination) => NavigationRailDestination(
-                              icon: destination.icon,
-                              selectedIcon: destination.selectedIcon,
-                              label: Text(destination.label),
+                      child: NavigationRail(
+                        extended: extendedRail,
+                        minExtendedWidth: 244,
+                        labelType: extendedRail
+                            ? null
+                            : NavigationRailLabelType.all,
+                        backgroundColor: Colors.transparent,
+                        indicatorColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer,
+                        selectedIconTheme: IconThemeData(
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 24,
+                        ),
+                        selectedLabelTextStyle: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w800,
                             ),
-                          )
-                          .toList(),
+                        selectedIndex: selectedIndex,
+                        onDestinationSelected: (index) =>
+                            ref.read(shellTabProvider.notifier).setTab(index),
+                        leading: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          child: extendedRail
+                              ? const _RailBrand()
+                              : const _RailLogo(),
+                        ),
+                        destinations: _destinations
+                            .map(
+                              (destination) => NavigationRailDestination(
+                                icon: destination.icon,
+                                selectedIcon: destination.selectedIcon,
+                                label: Text(destination.label),
+                              ),
+                            )
+                            .toList(),
+                      ),
                     ),
-                    const VerticalDivider(width: 1),
                     Expanded(
                       child: IndexedStack(
                         index: selectedIndex,
@@ -103,25 +135,59 @@ class AppShell extends ConsumerWidget {
           }
 
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Jurnal SMK BPPI'),
-              actions: const [
-                Padding(
-                  padding: EdgeInsets.only(right: 16),
-                  child: _AppBarBrand(),
-                ),
-              ],
-            ),
             body: IndexedStack(index: selectedIndex, children: pages),
-            bottomNavigationBar: NavigationBar(
-              height: 72,
+            bottomNavigationBar: _MobileNavigation(
               selectedIndex: selectedIndex,
               onDestinationSelected: (index) =>
                   ref.read(shellTabProvider.notifier).setTab(index),
-              destinations: _destinations,
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _MobileNavigation extends StatelessWidget {
+  const _MobileNavigation({
+    required this.selectedIndex,
+    required this.onDestinationSelected,
+  });
+
+  final int selectedIndex;
+  final ValueChanged<int> onDestinationSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLowest,
+        border: Border(top: BorderSide(color: colors.outlineVariant)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: 0.08),
+            blurRadius: 24,
+            offset: const Offset(0, -8),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+            child: NavigationBar(
+              height: 68,
+              backgroundColor: colors.surfaceContainerLowest,
+              selectedIndex: selectedIndex,
+              onDestinationSelected: onDestinationSelected,
+              destinations: AppShell._destinations,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -145,7 +211,7 @@ class _RailBrand extends StatelessWidget {
         Text(
           'Jurnal SMK BPPI',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: AppColors.primary700,
+            color: Theme.of(context).colorScheme.primary,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -154,16 +220,24 @@ class _RailBrand extends StatelessWidget {
   }
 }
 
-class _AppBarBrand extends StatelessWidget {
-  const _AppBarBrand();
+class _RailLogo extends StatelessWidget {
+  const _RailLogo();
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/images/logo.png',
-      width: 36,
-      height: 36,
-      semanticLabel: 'Logo SMK BPPI',
+    return Container(
+      width: 48,
+      height: 48,
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      child: Image.asset(
+        'assets/images/logo.png',
+        semanticLabel: 'Logo SMK BPPI',
+      ),
     );
   }
 }

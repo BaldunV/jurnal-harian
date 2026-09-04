@@ -178,12 +178,7 @@ class _SaveGlowButtonState extends State<SaveGlowButton>
         borderRadius: BorderRadius.circular(AppRadius.pill),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.pill),
-          onTap: (widget.enabled && !loading)
-              ? () {
-                  HapticFeedback.lightImpact();
-                  _trigger();
-                }
-              : null,
+          onTap: (widget.enabled && !loading) ? _trigger : null,
           splashColor: Colors.white.withValues(alpha: 0.2),
           highlightColor: Colors.white.withValues(alpha: 0.1),
           child: Padding(

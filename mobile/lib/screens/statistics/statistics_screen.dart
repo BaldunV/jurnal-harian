@@ -10,8 +10,8 @@ import '../../models/statistics.dart';
 import '../../providers/statistics_controller.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/progress_ring.dart';
+import '../../widgets/screen_app_bar.dart';
 import '../../widgets/state_views.dart';
-import '../../widgets/toast.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({super.key});
@@ -26,14 +26,18 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final state = ref.watch(statisticsControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Statistik')),
+      appBar: const ScreenAppBar(
+        title: 'Statistik',
+        subtitle: 'Pantau perkembangan kebiasaanmu',
+        icon: LucideIcons.pieChart,
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(statisticsControllerProvider.notifier).load(),
         child: ListView(
           padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
+            20,
             AppSpacing.lg,
-            AppSpacing.xl,
+            20,
             AppSpacing.xxl,
           ),
           children: [
@@ -110,20 +114,27 @@ class _ToggleOption extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: active ? colors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(9999),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: active ? Colors.white : colors.onSurfaceVariant,
+      child: Semantics(
+        button: true,
+        selected: active,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: active ? colors.primary : Colors.transparent,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: active ? colors.onPrimary : colors.onSurfaceVariant,
+              ),
             ),
           ),
         ),
@@ -333,12 +344,6 @@ class _StatisticsContent extends ConsumerWidget {
             }).toList(),
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
-        ToastNotification(
-          message: 'Statistik berhasil dimuat',
-          type: ToastType.success,
-          onClose: () {},
-        ),
       ],
     );
   }
@@ -350,10 +355,11 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Text(
       title,
       style: Theme.of(context).textTheme.titleMedium
-          ?.copyWith(fontWeight: FontWeight.w800, color: AppColors.primary600),
+          ?.copyWith(fontWeight: FontWeight.w800, color: colors.primary),
     );
   }
 }
@@ -365,37 +371,36 @@ class _AlertCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: <Color>[Color(0xFFFEF3C7), Color(0xFFFDE68A)],
-        ),
+        color: colors.tertiaryContainer,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: const Color(0xFFFCD34D)),
+        border: Border.all(color: colors.tertiary.withValues(alpha: 0.45)),
       ),
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
-          const Icon(LucideIcons.lightbulb, color: Color(0xFFB45309)),
+          Icon(LucideIcons.lightbulb, color: colors.onTertiaryContainer),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Kebiasaan paling sering terlewat',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
-                    color: Color(0xFF92400E),
+                    color: colors.onTertiaryContainer,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '${lowest.name} hanya ${lowest.percentage}% di periode ini. '
                   'Coba jadwalkan di waktu yang konsisten setiap hari!',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF92400E),
+                    color: colors.onTertiaryContainer,
                   ),
                 ),
               ],

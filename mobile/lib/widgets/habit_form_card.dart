@@ -129,37 +129,54 @@ class HabitFormCard extends StatelessWidget {
               ),
             ),
           ],
-          if (extra != null) ...[const SizedBox(height: 12), extra!],
-          if (timePresets.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            _TimePresets(
-              presets: timePresets,
-              selected: time,
-              accent: tone.iconText,
-              enabled: enabled,
-              onChanged: onTimeChanged,
-            ),
-          ],
-          if (noteHint != null) ...[
-            const SizedBox(height: 14),
-            TextField(
-              controller: TextEditingController(
-                text: note,
-              )..selection = TextSelection.collapsed(offset: note?.length ?? 0),
-              onChanged: onNoteChanged,
-              enabled: enabled,
-              maxLines: 1,
-              style: theme.textTheme.bodyMedium,
-              decoration: InputDecoration(
-                hintText: noteHint,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-          if (photo != null) ...[const SizedBox(height: 14), photo!],
+          AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.topCenter,
+            child: value
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (extra != null) ...[
+                        const SizedBox(height: 12),
+                        extra!,
+                      ],
+                      if (timePresets.isNotEmpty) ...[
+                        const SizedBox(height: 14),
+                        _TimePresets(
+                          presets: timePresets,
+                          selected: time,
+                          accent: tone.iconText,
+                          enabled: enabled,
+                          onChanged: onTimeChanged,
+                        ),
+                      ],
+                      if (noteHint != null) ...[
+                        const SizedBox(height: 14),
+                        TextFormField(
+                          initialValue: note,
+                          onChanged: onNoteChanged,
+                          enabled: enabled,
+                          maxLines: 2,
+                          minLines: 1,
+                          style: theme.textTheme.bodyMedium,
+                          decoration: InputDecoration(
+                            hintText: noteHint,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (photo != null) ...[
+                        const SizedBox(height: 14),
+                        photo!,
+                      ],
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -183,6 +200,7 @@ class _TimePresets extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -196,7 +214,7 @@ class _TimePresets extends StatelessWidget {
             decoration: BoxDecoration(
               color: active ? accent : Colors.transparent,
               border: Border.all(
-                color: active ? accent : AppColors.border,
+                color: active ? accent : colors.outlineVariant,
                 width: 1.5,
               ),
               borderRadius: BorderRadius.circular(10),
@@ -206,7 +224,7 @@ class _TimePresets extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: active ? Colors.white : Colors.grey.shade600,
+                color: active ? Colors.white : colors.onSurfaceVariant,
               ),
             ),
           ),

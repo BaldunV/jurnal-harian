@@ -42,10 +42,7 @@ void main() {
   test('parses the bearer token and student from the login response', () async {
     adapter.enqueueJson(tokenEnvelope());
 
-    final result = await service.login(
-      nis: '20260012',
-      password: 'secret123',
-    );
+    final result = await service.login(nis: '20260012', password: 'secret123');
 
     expect(result.token, '12|plain-token');
     expect(result.issuedUser.nis, '20260012');

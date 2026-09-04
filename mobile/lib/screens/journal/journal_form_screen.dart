@@ -85,6 +85,7 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
     final operation = ref.watch(journalControllerProvider).operation;
     final busy = _busy || operation.isBusy;
     final locked = widget.existing?.isSubmitted ?? false;
+    final keyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -92,9 +93,9 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
+          20,
           AppSpacing.lg,
-          AppSpacing.xl,
+          20,
           AppSpacing.xxl,
         ),
         children: [
@@ -118,59 +119,77 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
           const SizedBox(height: AppSpacing.lg),
           ..._habitCards(context, locked),
           const SizedBox(height: AppSpacing.xl),
-          if (locked)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 24),
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(LucideIcons.lock, size: 18, color: Colors.white),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Jurnal Selesai & Terkunci Permanen',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            )
-          else ...[
-            SaveGlowButton(
-              key: const Key('submit_journal_button'),
-              label: 'Simpan Jurnal Hari Ini',
-              enabled: !busy,
-              onPressed: () => _persist(submit: true),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                key: const Key('save_draft_button'),
-                onPressed: busy ? null : () => _persist(submit: false),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  side: BorderSide(
-                    color: AppColors.primary500.withValues(alpha: 0.5),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
-                ),
-                child: const Text('Simpan sebagai draft'),
-              ),
-            ),
-          ],
         ],
       ),
+      bottomNavigationBar: keyboardOpen
+          ? null
+          : _FormActionBar(
+              locked: locked,
+              busy: busy,
+              onSaveDraft: () => _persist(submit: false),
+              onSubmit: _confirmAndSubmit,
+            ),
     );
+  }
+
+  Future<void> _confirmAndSubmit() async {
+    final confirmed = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
+                ),
+                child: Icon(
+                  LucideIcons.lockKeyhole,
+                  color: Theme.of(context).colorScheme.onTertiaryContainer,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Kirim jurnal sekarang?',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Periksa kembali isianmu. Setelah dikirim, jurnal hari ini akan terkunci dan tidak dapat diubah.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              SaveGlowButton(
+                label: 'Ya, kirim dan kunci',
+                icon: LucideIcons.send,
+                onPressed: () => Navigator.of(context).pop(true),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Periksa lagi'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      await _persist(submit: true);
+    }
   }
 
   Widget _lockBanner() {
@@ -230,19 +249,57 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
 
   Widget _progressChip() {
     final colors = Theme.of(context).colorScheme;
+    final progress = (_draft.completed / Habits.total)
+        .clamp(0.0, 1.0)
+        .toDouble();
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.surfaceContainer,
-        borderRadius: BorderRadius.circular(AppRadius.sm),
+        color: colors.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(LucideIcons.listChecks, color: colors.primary, size: 20),
-          const SizedBox(width: 10),
-          Text(
-            '${_draft.completed} dari ${Habits.total} kebiasaan diisi',
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
+                ),
+                child: Icon(
+                  LucideIcons.listChecks,
+                  color: colors.primary,
+                  size: 19,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Text(
+                  '${_draft.completed} dari ${Habits.total} kebiasaan diisi',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              Text(
+                '${(progress * 100).round()}%',
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: colors.primary),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 7,
+              color: colors.primary,
+              backgroundColor: colors.surfaceContainerHighest,
+            ),
           ),
         ],
       ),
@@ -300,7 +357,8 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
                 ? null
                 : (value) => _setNote(habit.key, value),
             extra: habit.key == 'beribadah' ? _worshipDetails(context) : null,
-            photo: habit.key == 'berolahraga' ||
+            photo:
+                habit.key == 'berolahraga' ||
                     habit.key == 'makan_sehat' ||
                     habit.key == 'gemar_belajar' ||
                     habit.key == 'bermasyarakat'
@@ -479,5 +537,89 @@ class _JournalFormScreenState extends ConsumerState<JournalFormScreen> {
   String _prettify(String key) {
     final spaced = key.replaceAll('_', ' ');
     return spaced[0].toUpperCase() + spaced.substring(1);
+  }
+}
+
+class _FormActionBar extends StatelessWidget {
+  const _FormActionBar({
+    required this.locked,
+    required this.busy,
+    required this.onSaveDraft,
+    required this.onSubmit,
+  });
+
+  final bool locked;
+  final bool busy;
+  final VoidCallback onSaveDraft;
+  final VoidCallback onSubmit;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colors.surfaceContainerLowest,
+      elevation: 12,
+      shadowColor: colors.shadow.withValues(alpha: 0.14),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 14),
+          child: locked
+              ? Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 18,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colors.surfaceContainer,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        LucideIcons.lock,
+                        size: 18,
+                        color: colors.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          'Jurnal sudah dikirim dan terkunci',
+                          textAlign: TextAlign.center,
+                          style: Theme.of(context).textTheme.labelLarge,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SaveGlowButton(
+                      key: const Key('submit_journal_button'),
+                      label: 'Kirim dan kunci jurnal',
+                      icon: LucideIcons.send,
+                      enabled: !busy,
+                      isLoading: busy,
+                      onPressed: onSubmit,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton.icon(
+                        key: const Key('save_draft_button'),
+                        onPressed: busy ? null : onSaveDraft,
+                        icon: const Icon(LucideIcons.save, size: 18),
+                        label: const Text('Simpan sebagai draft'),
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
   }
 }

@@ -8,6 +8,7 @@ import '../../core/utils/date_format.dart';
 import '../../models/journal.dart';
 import '../../providers/journal_controller.dart';
 import '../../widgets/app_card.dart';
+import '../../widgets/screen_app_bar.dart';
 import '../../widgets/state_views.dart';
 import 'journal_detail_screen.dart';
 
@@ -45,7 +46,11 @@ class _JournalHistoryScreenState extends ConsumerState<JournalHistoryScreen> {
     final state = ref.watch(journalControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Riwayat Jurnal')),
+      appBar: const ScreenAppBar(
+        title: 'Riwayat jurnal',
+        subtitle: 'Lihat perjalanan kebiasaanmu',
+        icon: LucideIcons.calendarDays,
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.read(journalControllerProvider.notifier).load(),
         child: _buildBody(context, ref, state),
@@ -81,12 +86,7 @@ class _JournalHistoryScreenState extends ConsumerState<JournalHistoryScreen> {
         .length;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xl,
-        AppSpacing.lg,
-        AppSpacing.xl,
-        AppSpacing.xxl,
-      ),
+      padding: const EdgeInsets.fromLTRB(20, AppSpacing.lg, 20, AppSpacing.xxl),
       children: [
         _MonthHeader(
           focused: _focused,
@@ -172,12 +172,15 @@ class _MonthHeader extends StatelessWidget {
               ],
             ),
           ),
-          IconButton(
+          IconButton.filledTonal(
             onPressed: onPrev,
+            tooltip: 'Bulan sebelumnya',
             icon: const Icon(LucideIcons.chevronLeft),
           ),
-          IconButton(
+          const SizedBox(width: AppSpacing.xs),
+          IconButton.filledTonal(
             onPressed: onNext,
+            tooltip: 'Bulan berikutnya',
             icon: const Icon(LucideIcons.chevronRight),
           ),
         ],
@@ -252,13 +255,13 @@ class _MonthCalendar extends StatelessWidget {
             children: cells,
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
             children: [
               _Legend(color: AppColors.primary500, label: 'Lengkap'),
-              const SizedBox(width: 16),
               _Legend(color: AppColors.amber, label: 'Sebagian'),
-              const SizedBox(width: 16),
               _Legend(color: colors.surfaceContainerHighest, label: 'Kosong'),
             ],
           ),

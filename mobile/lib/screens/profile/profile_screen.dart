@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:lucide_flutter/lucide_flutter.dart';
 
 import '../../core/theme/design_tokens.dart';
 import '../../models/student.dart';
@@ -9,6 +9,7 @@ import '../../providers/profile_controller.dart';
 import '../../providers/session_provider.dart';
 import '../../widgets/app_card.dart';
 import '../../widgets/profile_avatar.dart';
+import '../../widgets/screen_app_bar.dart';
 import '../../widgets/status_message.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -49,12 +50,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
+      appBar: const ScreenAppBar(
+        title: 'Profil',
+        subtitle: 'Kelola identitas dan keamanan akun',
+        icon: LucideIcons.user,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
+          20,
           AppSpacing.lg,
-          AppSpacing.xl,
+          20,
           AppSpacing.xxl,
         ),
         children: [
@@ -77,6 +82,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   const SizedBox(height: AppSpacing.md),
                   Text(
                     student.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontFamily: AppTypography.displayFont,
                       color: Colors.white,
@@ -85,6 +93,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   ),
                   Text(
                     '${student.className}  •  NIS ${student.nis}',
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodyMedium
                         ?.copyWith(color: Colors.white.withValues(alpha: 0.85)),
                   ),
@@ -108,6 +119,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ),
           ),
+          const SizedBox(height: AppSpacing.lg),
           if (operation.status == ProfileOperationStatus.error &&
               operation.message != null)
             Padding(
@@ -228,7 +240,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ref
             .read(sessionControllerProvider.notifier)
             .updateStudent(student.copyWith(profilePhotoUrl: url));
-        ref.read(profileControllerProvider.notifier).resetOperation();
       }
     } on Object {
       // Operation error already surfaced in the UI.
@@ -256,9 +267,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             name: _nameController.text.trim(),
             worshipType: _worshipType!,
           );
-      if (mounted) {
-        ref.read(profileControllerProvider.notifier).resetOperation();
-      }
     } on Object {
       // Operation error shown in UI.
     }
@@ -280,6 +288,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
     if (_newPasswordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Konfirmasi password baru belum sama.')),
+      );
       return;
     }
     try {
@@ -289,9 +300,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             currentPassword: _currentPasswordController.text,
             newPassword: _newPasswordController.text,
           );
-      if (mounted) {
-        ref.read(profileControllerProvider.notifier).resetOperation();
-      }
     } on Object {
       // Operation error shown in UI.
     }
