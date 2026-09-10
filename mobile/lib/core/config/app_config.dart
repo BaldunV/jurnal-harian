@@ -10,7 +10,7 @@ class AppConfig {
     );
   }
 
-  static const defaultApiBaseUrl = 'http://10.0.2.2:8000/api';
+  static const defaultApiBaseUrl = 'http://192.168.101.4:8000/api';
 
   final String apiBaseUrl;
 
@@ -35,3 +35,5 @@ class AppConfig {
     return '$trimmed/';
   }
 }
+
+

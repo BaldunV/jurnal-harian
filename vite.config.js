@@ -18,6 +18,7 @@ export default defineConfig({
                 'resources/css/dashboard.css',
 
                 'resources/js/app.js',
+                'resources/js/login.js',
                 'resources/js/apps/dashboard-react.jsx',
                 'resources/js/apps/statistics-react.jsx',
                 'resources/js/apps/login-react.tsx',

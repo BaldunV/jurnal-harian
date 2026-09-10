@@ -3,9 +3,12 @@
 /* ==========================================
    Sources khusus halaman login
    ========================================== */
-@source "../views/auth/**/*.blade.php";
+@source "../views/auth/login.blade.php";
+@source "../views/auth/partials/login-form-body.blade.php";
 @source "../views/layouts/guest.blade.php";
-@source "../views/partials/**/*.blade.php";
+@source "../views/partials/icon.blade.php";
+@source "../views/partials/pwa-install-button.blade.php";
+@source "../views/partials/pwa-register.blade.php";
 
 /* ==========================================
    Shared theme dari app.css
@@ -229,6 +232,38 @@ select.auth-input {
 /* ==========================================
    Auth animations
    ========================================== */
+@keyframes portalCheckPop {
+    0% {
+        transform: scale(.4) rotate(-20deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.portal-check-pop {
+    animation: portalCheckPop .4s cubic-bezier(.16, 1, .3, 1);
+}
+
+@keyframes sheetHintBounce {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: .8;
+    }
+
+    50% {
+        transform: translateY(-4px);
+        opacity: 1;
+    }
+}
+
+.sheet-hint-bounce {
+    animation: sheetHintBounce 1.6s ease-in-out infinite;
+}
+
 @keyframes floatSlow {
     0%, 100% {
         transform: translateY(0) rotate(0);
@@ -284,7 +319,36 @@ select.auth-input {
     }
 }
 
+/* ==========================================
+   Guest shell (dipindah dari layouts/guest agar DOCTYPE tetap byte pertama)
+   ========================================== */
+@keyframes ambientDrift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(34px, -26px) scale(1.08); }
+}
+
+@keyframes ambientDriftSlow {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%      { transform: translate(-30px, 24px) scale(1.1); }
+}
+
+.ambient-drift { animation: ambientDrift 16s ease-in-out infinite; }
+.ambient-drift-slow { animation: ambientDriftSlow 20s ease-in-out infinite; }
+
+@keyframes cardEnter {
+    0%   { opacity: 0; transform: translateY(14px) scale(.985); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.card-enter { animation: cardEnter .5s cubic-bezier(.16, 1, .3, 1) forwards; }
+
+::selection { background: rgba(16, 185, 129, .22); }
+.dark ::selection { background: rgba(217, 70, 239, .35); }
+
 @media (prefers-reduced-motion: reduce) {
+    .ambient-drift,
+    .ambient-drift-slow,
+    .card-enter,
     .animate-float-slow,
     .animate-float-reverse,
     .animate-pulse-glow {

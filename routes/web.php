@@ -42,6 +42,16 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin/documentation', [AdminController::class, 'documentation'])->name('admin.documentation');
+        Route::post('/admin/students/bulk', [AdminStudentController::class, 'bulkStore'])->name('admin.students.bulk');
+        Route::post('/admin/teachers', [AdminStudentController::class, 'storeTeacher'])->name('admin.teachers.store');
+        Route::post('/admin/students/import/preview', [AdminStudentController::class, 'importPreview'])->name('admin.students.import.preview');
+        Route::post('/admin/students/import/store', [AdminStudentController::class, 'importStore'])->name('admin.students.import.store');
+        Route::get('/admin/students/template', [AdminStudentController::class, 'downloadTemplate'])->name('admin.students.template');
+    });
+
+    Route::middleware('role:admin,guru')->group(function () {
+        Route::get('/teacher', [TeacherController::class, 'index'])->name('teacher.index');
+        Route::get('/api/teacher/student/{id}', [TeacherController::class, 'studentDetail'])->name('teacher.student_detail');
         Route::get('/admin/documentation/{journal}/photo/{type}', [AdminController::class, 'documentationPhoto'])
             ->whereNumber('journal')
             ->whereIn('type', [
@@ -51,15 +61,6 @@ Route::middleware('auth')->group(function () {
                 'masyarakat',
             ])
             ->name('admin.documentation.photo');
-        Route::post('/admin/students/bulk', [AdminStudentController::class, 'bulkStore'])->name('admin.students.bulk');
-        Route::post('/admin/students/import/preview', [AdminStudentController::class, 'importPreview'])->name('admin.students.import.preview');
-        Route::post('/admin/students/import/store', [AdminStudentController::class, 'importStore'])->name('admin.students.import.store');
-        Route::get('/admin/students/template', [AdminStudentController::class, 'downloadTemplate'])->name('admin.students.template');
-    });
-
-    Route::middleware('role:admin,guru')->group(function () {
-        Route::get('/teacher', [TeacherController::class, 'index'])->name('teacher.index');
-        Route::get('/api/teacher/student/{id}', [TeacherController::class, 'studentDetail'])->name('teacher.student_detail');
     });
 
 });

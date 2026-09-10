@@ -7,7 +7,7 @@
     <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-emerald-200/30 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
 
     <!-- Logo Aplikasi -->
-    <img src="{{ asset('images/logo-login.webp') }}" width="96" height="93" fetchpriority="high" alt="Logo SMK BPPI" class="relative w-16 h-16 mx-auto mb-3 object-contain drop-shadow-sm">
+    <img src="{{ asset('images/logo-login.webp') }}" width="96" height="93" fetchpriority="high" decoding="async" alt="Logo SMK BPPI" class="relative w-16 h-16 mx-auto mb-3 object-contain drop-shadow-sm">
 
     <div class="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[11px] font-bold mb-3 border border-emerald-200/80 dark:border-emerald-500/30 shadow-sm">
         @include('partials.icon', ['name' => 'sparkles', 'class' => 'w-2.5 h-2.5 text-emerald-400/80'])
@@ -178,9 +178,9 @@
             <span class="font-medium text-xs">Ingat Saya</span>
         </label>
 
-        <a href="javascript:void(0)" onclick="alert('Jika Anda lupa password atau belum terdaftar, silakan hubungi Guru Wali Kelas atau Administrator Sekolah.')" class="font-medium text-xs text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors">
+        <button type="button" onclick="alert('Jika Anda lupa password atau belum terdaftar, silakan hubungi Guru Wali Kelas atau Administrator Sekolah.')" class="font-medium text-xs text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors cursor-pointer">
             Butuh bantuan?
-        </a>
+        </button>
     </div>
 
     <!-- ======== SUBMIT BUTTON ======== -->

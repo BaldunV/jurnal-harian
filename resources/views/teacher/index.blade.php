@@ -134,6 +134,39 @@
     </div>
 </div>
 
+<!-- Dokumentasi Foto Kelas -->
+<div class="bg-white dark:bg-slate-800 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden print-plain">
+    <div class="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+        <h3 class="font-extrabold text-slate-800 dark:text-slate-100 text-sm">@include('partials.icon', ['name' => 'images', 'class' => 'w-4 h-4 inline-block mr-1'])Dokumentasi Foto {{ $docsKelas && $docsKelas !== '-' ? 'Kelas '.$docsKelas : 'Terbaru' }}</h3>
+        <span class="text-xs text-slate-400">{{ $documentations->count() }} jurnal</span>
+    </div>
+    <div class="p-5 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        @forelse($documentations as $doc)
+            <article class="rounded-2xl border border-slate-200/80 dark:border-slate-600 overflow-hidden">
+                <a href="{{ $doc->doc_items[0]['photo'] }}" target="_blank" rel="noopener" class="relative block aspect-[4/3] bg-slate-100 dark:bg-slate-700">
+                    <img src="{{ $doc->doc_items[0]['photo'] }}" alt="Dokumentasi {{ $doc->user->name }}" loading="lazy" class="absolute inset-0 w-full h-full object-cover hover:opacity-95 transition-opacity">
+                    @if(count($doc->doc_items) > 1)
+                        <span class="absolute right-3 bottom-3 min-w-9 h-9 px-2 rounded-full bg-slate-950/75 text-white flex items-center justify-center text-xs font-black border border-white/20">+{{ count($doc->doc_items) - 1 }}</span>
+                    @endif
+                </a>
+                <div class="p-3.5">
+                    <div class="font-bold text-slate-800 dark:text-slate-100 text-xs">{{ $doc->user->name }}</div>
+                    <div class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{{ $doc->user->nis }} &bull; {{ $doc->user->kelas }} &bull; {{ \Carbon\Carbon::parse($doc->date)->translatedFormat('d M Y') }}</div>
+                    <div class="flex flex-wrap gap-1.5 mt-2">
+                        @foreach($doc->doc_items as $item)
+                            <a href="{{ $item['photo'] }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/70 text-slate-600 dark:text-slate-300 text-[10px] font-bold hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
+                                @include('partials.icon', ['name' => $item['icon'], 'class' => 'w-3 h-3']) {{ $item['label'] }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </article>
+        @empty
+            <p class="sm:col-span-2 xl:col-span-3 py-6 text-center text-slate-400 text-xs font-medium">Belum ada dokumentasi foto untuk kelas ini.</p>
+        @endforelse
+    </div>
+</div>
+
 <!-- Modal Detail Siswa untuk Guru -->
 <div id="student-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 print:hidden">
     <div class="bg-white dark:bg-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative animate-fade-in">

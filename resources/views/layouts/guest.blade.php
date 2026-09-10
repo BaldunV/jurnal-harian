@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jurnal 7 Kebiasaan SMK BPPI untuk mencatat dan memantau kebiasaan harian siswa.">
     @include('partials.pwa-meta')
     <title>@yield('title', 'Jurnal Siswa')</title>
 
@@ -14,46 +15,8 @@
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Baloo+2:wght@600;700;800&display=swap">
     </noscript>
 
-    <!-- Font Awesome Icons -->
-    <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    </noscript>
-
     @viteReactRefresh
-    @vite(['resources/css/login.css'])
-    <style>
-        /* Ambient drifting background orbs */
-        @keyframes ambientDrift {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(34px, -26px) scale(1.08); }
-        }
-        @keyframes ambientDriftSlow {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50%      { transform: translate(-30px, 24px) scale(1.1); }
-        }
-        .ambient-drift { animation: ambientDrift 16s ease-in-out infinite; }
-        .ambient-drift-slow { animation: ambientDriftSlow 20s ease-in-out infinite; }
-
-        /* Card entrance */
-        @keyframes cardEnter {
-            0%   { opacity: 0; transform: translateY(14px) scale(.985); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .card-enter { animation: cardEnter .5s cubic-bezier(.16, 1, .3, 1) forwards; }
-
-        /* Selection theming */
-        ::selection { background: rgba(16, 185, 129, .22); }
-        .dark ::selection { background: rgba(217, 70, 239, .35); }
-
-        /* Mobile GPU/CPU perf A/B test - only disable backdrop blur */
-        @media (max-width: 767px) {
-            .backdrop-blur-xl {
-                backdrop-filter: none !important;
-                -webkit-backdrop-filter: none !important;
-            }
-        }
-    </style>
+    @vite(['resources/css/login.css', 'resources/js/login.js'])
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 font-sans text-slate-800 dark:text-slate-100 min-h-screen flex flex-col md:justify-center items-center relative overflow-x-clip">
 

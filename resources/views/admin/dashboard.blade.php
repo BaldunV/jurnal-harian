@@ -184,6 +184,59 @@
         </div>
     </div>
 </section>
+<section id="manajemen-guru" class="admin-management-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden mb-6">
+    <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700">
+        <div class="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">Data akses</div>
+        <h2 class="font-extrabold text-slate-800 dark:text-slate-100">@include('partials.icon', ['name' => 'user-plus', 'class' => 'w-4 h-4 inline-block mr-1 text-amber-600'])Buat Akun Guru / Wali Kelas</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Satu akun per wali kelas. Login via portal Staff pakai Username + password.</p>
+    </div>
+    <form method="POST" action="{{ route('admin.teachers.store', ['view' => 'registered']) }}#manajemen-guru" class="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        @csrf
+        <div>
+            <input type="text" name="name" value="{{ old('name') }}" placeholder="Nama guru" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+            @error('name')<p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <input type="text" name="nis" value="{{ old('nis') }}" placeholder="Username (mis. GURU001)" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+            @error('nis')<p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <input type="text" name="password" placeholder="Password (min. 6)" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500">
+            @error('password')<p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>@enderror
+        </div>
+        <div>
+            <select name="kelas" required class="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <option value="">-- Kelas --</option>
+                @foreach(\App\Http\Controllers\AdminStudentController::KELAS_LIST as $kelasOption)
+                    <option value="{{ $kelasOption }}" @selected(old('kelas') === $kelasOption)>Kelas {{ $kelasOption }}</option>
+                @endforeach
+            </select>
+            @error('kelas')<p class="text-[11px] text-rose-500 mt-1">{{ $message }}</p>@enderror
+        </div>
+        <button type="submit" class="inline-flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-xs font-extrabold shadow-md shadow-amber-500/25 hover:bg-amber-600 transition-colors">
+            @include('partials.icon', ['name' => 'save', 'class' => 'w-3.5 h-3.5']) Buat Akun Guru
+        </button>
+    </form>
+    <div class="overflow-x-auto border-t border-slate-100 dark:border-slate-700">
+        <table class="w-full min-w-[640px] text-left text-xs text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
+                <tr><th class="py-3 px-4">Nama Guru</th><th class="py-3 px-4">Username</th><th class="py-3 px-4">Kelas</th><th class="py-3 px-4">Dibuat</th></tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                @forelse($teachers as $teacher)
+                    <tr class="hover:bg-amber-50/40 dark:hover:bg-amber-500/10 transition-colors">
+                        <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">{{ $teacher->name }}</td>
+                        <td class="py-3 px-4 font-mono font-bold">{{ $teacher->nis }}</td>
+                        <td class="py-3 px-4"><span class="px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/15 text-amber-700 dark:text-amber-300 font-bold">{{ $teacher->kelas }}</span></td>
+                        <td class="py-3 px-4 text-slate-500 dark:text-slate-400">{{ optional($teacher->created_at)->translatedFormat('d M Y') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="p-6 text-center text-slate-400 dark:text-slate-500">Belum ada akun guru.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</section>
 <section id="daftar-siswa-terdaftar" class="admin-management-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
     <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
         <div>

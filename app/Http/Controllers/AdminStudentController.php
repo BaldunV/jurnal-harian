@@ -22,6 +22,27 @@ class AdminStudentController extends Controller
         return response()->json($this->storeStudents($kelas, $rows));
     }
 
+    public function storeTeacher(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'nis' => ['required', 'string', 'max:50', 'unique:users,nis'],
+            'password' => ['required', 'string', 'min:6'],
+            'kelas' => ['required', 'string', 'in:'.implode(',', self::KELAS_LIST)],
+        ]);
+
+        User::create([
+            'nis' => $validated['nis'],
+            'name' => $validated['name'],
+            'kelas' => $validated['kelas'],
+            'role' => 'guru',
+            'worship_type' => 'muslim',
+            'password' => $validated['password'],
+        ]);
+
+        return back()->with('success', "Akun guru {$validated['name']} ({$validated['kelas']}) berhasil dibuat.");
+    }
+
     public function importPreview(Request $request)
     {
         $request->validate([

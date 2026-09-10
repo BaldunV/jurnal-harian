@@ -20,6 +20,7 @@ class AdminController extends Controller
         }
 
         $students = $studentsQuery->get();
+        $teachers = User::where('role', 'guru')->orderBy('kelas')->orderBy('name')->get();
         $studentIds = $students->pluck('id');
         $weekStart = Carbon::today()->startOfWeek(Carbon::MONDAY);
         $weekEnd = Carbon::today()->endOfWeek(Carbon::SUNDAY);
@@ -41,7 +42,7 @@ class AdminController extends Controller
         $monthlyRecap = $this->buildRecap($students, $monthJournals, $monthDays);
 
         return view('admin.dashboard', compact(
-            'classList', 'students', 'weekStart', 'weekEnd', 'monthStart', 'monthEnd', 'weeklyRecap', 'monthlyRecap'
+            'classList', 'students', 'teachers', 'weekStart', 'weekEnd', 'monthStart', 'monthEnd', 'weeklyRecap', 'monthlyRecap'
         ));
     }
 
