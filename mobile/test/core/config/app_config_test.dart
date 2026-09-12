@@ -5,8 +5,8 @@ void main() {
   test('uses the Android emulator API URL by default', () {
     final config = AppConfig.fromEnvironment();
 
-    expect(config.apiBaseUrl, 'http://10.0.2.2:8000/api/');
-    expect(config.environmentLabel, '10.0.2.2:8000');
+    expect(config.apiBaseUrl, 'http://192.168.101.4:8000/api/');
+    expect(config.environmentLabel, '192.168.101.4:8000');
   });
 
   test('normalizes an injected API URL', () {

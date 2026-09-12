@@ -996,18 +996,38 @@
 @push('scripts')
 <script data-navigate-once>
     function setPresetJam(type, time) {
-        const input = document.getElementById(type === 'bangun' ? 'bangun-pagi-time' : 'input-tidur-note');
+        const isBangun = type === 'bangun';
+
+        const input = document.getElementById(
+            isBangun ? 'bangun-pagi-time' : 'input-tidur-note'
+        );
+
+        const checkbox = document.getElementById(
+            isBangun ? 'checkbox-bangun-pagi' : 'checkbox-tidur-cepat'
+        );
+
         if (!input) return;
-        
-        // Konversi format AM/PM ke 24 jam jika diperlukan
+
+        // Selalu simpan jam dalam format 24 jam HH:mm
         let convertedTime = time;
+
         if (time.includes('AM') || time.includes('PM')) {
             convertedTime = convertTo24Hour(time);
         }
-        
-        input.value = type === 'bangun' ? convertedTime : time;
-        updateTimeStatusBadges();
-        autoSaveJournal();
+
+        input.value = convertedTime;
+
+        // Memilih preset berarti kebiasaannya juga selesai
+        if (checkbox && !checkbox.checked) {
+            checkbox.checked = true;
+
+            checkbox.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+        } else {
+            updateTimeStatusBadges();
+            autoSaveJournal();
+        }
     }
 
     // Fungsi helper untuk konversi 12-hour ke 24-hour format
