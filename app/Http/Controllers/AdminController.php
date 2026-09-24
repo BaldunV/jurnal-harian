@@ -7,39 +7,71 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
     public function dashboard(Request $request)
     {
+        $filters = $request->validate([
+            'view' => ['nullable', Rule::in(['registered'])],
+            'kelas' => ['nullable', Rule::in(AdminStudentController::KELAS_LIST)],
+            'worship_type' => ['nullable', Rule::in(['muslim', 'non_muslim'])],
+            'religion' => ['nullable', Rule::in(array_keys(User::RELIGIONS))],
+            'search' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $isRegisteredView = ($filters['view'] ?? null) === 'registered';
         $classList = User::where('role', 'siswa')->orderBy('kelas')->distinct()->pluck('kelas');
         $studentsQuery = User::where('role', 'siswa')->orderBy('kelas')->orderBy('name');
 
-        if ($request->filled('kelas')) {
-            $studentsQuery->where('kelas', $request->input('kelas'));
+        if (! empty($filters['kelas'])) {
+            $studentsQuery->where('kelas', $filters['kelas']);
         }
 
-        $students = $studentsQuery->get();
+        if (! empty($filters['worship_type'])) {
+            $studentsQuery->where('worship_type', $filters['worship_type']);
+        }
+
+        if (! empty($filters['religion'])) {
+            $studentsQuery->where('religion', $filters['religion']);
+        }
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $studentsQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('nis', 'like', "%{$search}%");
+            });
+        }
+
+        $students = $isRegisteredView
+            ? $studentsQuery->paginate(20)->withQueryString()
+            : $studentsQuery->get();
         $teachers = User::where('role', 'guru')->orderBy('kelas')->orderBy('name')->get();
-        $studentIds = $students->pluck('id');
         $weekStart = Carbon::today()->startOfWeek(Carbon::MONDAY);
         $weekEnd = Carbon::today()->endOfWeek(Carbon::SUNDAY);
         $monthStart = Carbon::today()->startOfMonth();
         $monthEnd = Carbon::today()->endOfMonth();
+        $weeklyRecap = null;
+        $monthlyRecap = null;
 
-        $weekJournals = Journal::whereIn('user_id', $studentIds)
-            ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
-            ->get()
-            ->groupBy('user_id');
-        $monthJournals = Journal::whereIn('user_id', $studentIds)
-            ->whereBetween('date', [$monthStart->toDateString(), $monthEnd->toDateString()])
-            ->get()
-            ->groupBy('user_id');
+        if (! $isRegisteredView) {
+            $studentIds = $students->pluck('id');
+            $weekJournals = Journal::whereIn('user_id', $studentIds)
+                ->whereBetween('date', [$weekStart->toDateString(), $weekEnd->toDateString()])
+                ->get()
+                ->groupBy('user_id');
+            $monthJournals = Journal::whereIn('user_id', $studentIds)
+                ->whereBetween('date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+                ->get()
+                ->groupBy('user_id');
 
-        $weekDays = $weekStart->diffInDays($weekEnd) + 1;
-        $monthDays = $monthStart->daysInMonth;
-        $weeklyRecap = $this->buildRecap($students, $weekJournals, $weekDays);
-        $monthlyRecap = $this->buildRecap($students, $monthJournals, $monthDays);
+            $weekDays = $weekStart->diffInDays($weekEnd) + 1;
+            $monthDays = $monthStart->daysInMonth;
+            $weeklyRecap = $this->buildRecap($students, $weekJournals, $weekDays);
+            $monthlyRecap = $this->buildRecap($students, $monthJournals, $monthDays);
+        }
 
         return view('admin.dashboard', compact(
             'classList', 'students', 'teachers', 'weekStart', 'weekEnd', 'monthStart', 'monthEnd', 'weeklyRecap', 'monthlyRecap'

@@ -9,7 +9,7 @@
         <div class="flex flex-col lg:flex-row gap-4 lg:items-end lg:justify-between">
             <div>
                 <div class="text-[11px] font-extrabold uppercase tracking-[0.16em] text-emerald-100 mb-2">@include('partials.icon', ['name' => 'shield-check', 'class' => 'w-3.5 h-3.5 inline-block mr-1']) Panel Admin</div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">{{ $isRegisteredView ? 'Siswa Terdaftar' : 'Rekap PAN Siswa' }}</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">{{ $isRegisteredView ? 'Siswa Terdaftar' : 'Rekap Siswa' }}</h1>
                 <p class="text-sm text-emerald-50/80 mt-1 max-w-2xl">{{ $isRegisteredView ? 'Kelola data dan akses masuk siswa dari satu tempat.' : 'Pantau ritme pengisian jurnal dan capaian kebiasaan seluruh siswa.' }}</p>
             </div>
             <nav class="admin-view-switcher self-start lg:self-auto" aria-label="Tampilan admin">
@@ -82,9 +82,14 @@
                     <option value="{{ $kelasOption }}">Kelas {{ $kelasOption }}</option>
                 @endforeach
             </select>
-            <a href="{{ route('admin.students.template') }}" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 text-xs font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
-                @include('partials.icon', ['name' => 'printer', 'class' => 'w-4 h-4']) Download Template
-            </a>
+            <div class="inline-flex rounded-xl shadow-sm">
+                <a href="{{ route('admin.students.template', ['format' => 'xlsx']) }}" class="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-l-xl bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 text-xs font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border-r border-slate-200 dark:border-slate-600" title="Download template format Excel (.xlsx)">
+                    @include('partials.icon', ['name' => 'printer', 'class' => 'w-4 h-4 text-emerald-600']) Template Excel
+                </a>
+                <a href="{{ route('admin.students.template') }}" class="inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-r-xl bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 text-xs font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" title="Download template format CSV (.csv)">
+                    CSV
+                </a>
+            </div>
             <button id="btn-toggle-bulk" type="button" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-primary-600 text-white text-xs font-extrabold shadow-md shadow-primary-600/25 hover:bg-primary-700 transition-colors">
                 @include('partials.icon', ['name' => 'list-checks', 'class' => 'w-4 h-4']) Tambah Siswa Massal
             </button>
@@ -98,13 +103,14 @@
     {{-- Panel: Tambah Siswa Massal (tabel dinamis) --}}
     <div id="panel-bulk" class="hidden border-b border-slate-100 dark:border-slate-700">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[980px] text-left text-xs text-slate-700 dark:text-slate-300">
+            <table class="w-full min-w-[1080px] text-left text-xs text-slate-700 dark:text-slate-300">
                 <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                     <tr>
                         <th class="py-3 px-4 w-12">No.</th>
                         <th class="py-3 px-4">Nama Siswa</th>
                         <th class="py-3 px-4">NIS</th>
                         <th class="py-3 px-4">Password</th>
+                        <th class="py-3 px-4 w-44">Agama</th>
                         <th class="py-3 px-4 w-16 text-center">Aksi</th>
                     </tr>
                 </thead>
@@ -126,7 +132,7 @@
         <div id="import-dropzone" class="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-2xl p-8 text-center cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/40 dark:hover:bg-emerald-500/5 transition-colors">
             <div class="text-slate-400 dark:text-slate-500 mx-auto mb-2">@include('partials.icon', ['name' => 'cloud-fog', 'class' => 'w-8 h-8'])</div>
             <p class="text-xs font-bold text-slate-600 dark:text-slate-300">Klik untuk pilih file Excel (.xlsx) atau CSV</p>
-            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password</strong>.</p>
+            <p class="text-[11px] text-slate-400 dark:text-slate-500 mt-1">Format kolom: <strong>Nama Siswa | NIS | Password | Agama</strong>.</p>
         </div>
         <div id="import-loading" class="hidden p-8 text-center text-xs font-bold text-slate-500 dark:text-slate-400">Memproses file&hellip;</div>
         <div id="import-preview" class="hidden mt-4">
@@ -144,6 +150,7 @@
                             <th class="py-3 px-4">Nama Siswa</th>
                             <th class="py-3 px-4">NIS</th>
                             <th class="py-3 px-4">Password</th>
+                            <th class="py-3 px-4 w-40">Agama</th>
                             <th class="py-3 px-4 w-40">Status</th>
                         </tr>
                     </thead>
@@ -250,26 +257,41 @@
             </p>
         </div>
         <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-            <form method="GET" action="{{ route('admin.dashboard') }}" class="w-full sm:w-auto">
+            <form method="GET" action="{{ route('admin.dashboard') }}" class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                 <input type="hidden" name="view" value="registered">
-                <select name="kelas" onchange="this.form.submit()" class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari nama / NIS" class="w-full sm:w-40 px-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                <select name="kelas" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
                     <option value="">-- Semua Kelas --</option>
                     @foreach($classList as $kelas)
                         <option value="{{ $kelas }}" @selected(request('kelas') === $kelas)>Kelas {{ $kelas }}</option>
                     @endforeach
                 </select>
+                <select name="worship_type" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="">Semua Jenis Ibadah</option>
+                    <option value="muslim" @selected(request('worship_type') === 'muslim')>Muslim</option>
+                    <option value="non_muslim" @selected(request('worship_type') === 'non_muslim')>Non-Muslim</option>
+                </select>
+                <select name="religion" onchange="this.form.submit()" class="w-full sm:w-auto px-4 py-2.5 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    <option value="">Semua Agama</option>
+                    @foreach(\App\Models\User::RELIGIONS as $value => $label)
+                        <option value="{{ $value }}" @selected(request('religion') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary-600 text-white text-xs font-extrabold hover:bg-primary-700 transition-colors">Cari</button>
             </form>
-            <span class="w-fit px-3 py-1.5 rounded-full bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300 text-xs font-extrabold whitespace-nowrap">{{ $students->count() }} siswa</span>
+            <span class="w-fit px-3 py-1.5 rounded-full bg-primary-50 dark:bg-primary-500/15 text-primary-700 dark:text-primary-300 text-xs font-extrabold whitespace-nowrap">{{ $students->total() }} siswa</span>
         </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="admin-student-table w-full min-w-[980px] text-left text-xs text-slate-700 dark:text-slate-300">
+        <table class="admin-student-table w-full min-w-[1080px] text-left text-xs text-slate-700 dark:text-slate-300">
             <thead class="bg-slate-50 dark:bg-slate-700/40 text-slate-400 font-extrabold uppercase tracking-wider text-[10px]">
                 <tr>
                     <th class="py-3.5 px-4">No.</th>
                     <th class="py-3.5 px-4">NIS</th>
                     <th class="py-3.5 px-4">Nama Siswa</th>
                     <th class="py-3.5 px-4">Kelas</th>
+                    <th class="py-3.5 px-4">Agama</th>
+                    <th class="py-3.5 px-4">Jenis Ibadah</th>
                     <th class="py-3.5 px-4">Email</th>
                     <th class="py-3.5 px-4">Terdaftar</th>
                 </tr>
@@ -277,21 +299,51 @@
             <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
                 @forelse($students as $index => $student)
                     <tr class="hover:bg-emerald-50/40 dark:hover:bg-emerald-500/10 transition-colors">
-                        <td data-label="No." class="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500">{{ $index + 1 }}</td>
+                        <td data-label="No." class="py-3.5 px-4 font-bold text-slate-400 dark:text-slate-500">{{ $students->firstItem() + $index }}</td>
                         <td data-label="NIS" class="py-3.5 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">{{ $student->nis }}</td>
                         <td data-label="Nama" class="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{{ $student->name }}</td>
                         <td data-label="Kelas" class="py-3.5 px-4"><span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 font-bold">{{ $student->kelas }}</span></td>
+                        <td data-label="Agama" class="py-3.5 px-4">
+                            <div id="religion-display-{{ $student->id }}" class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-bold text-[11px]">{{ $student->religion_label }}</span>
+                                <button type="button" onclick="toggleReligionEdit({{ $student->id }})" class="inline-flex items-center justify-center w-6 h-6 rounded-md text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-500/15 transition-colors" title="Ubah agama">
+                                    @include('partials.icon', ['name' => 'pencil', 'class' => 'w-3 h-3'])
+                                </button>
+                            </div>
+                            <form id="religion-edit-{{ $student->id }}" method="POST" action="{{ route('admin.students.update_religion', $student) }}" class="hidden flex items-center gap-2">
+                                @csrf
+                                @method('PUT')
+                                <select name="religion" required class="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <option value="">Pilih agama</option>
+                                    @foreach(\App\Models\User::RELIGIONS as $value => $label)
+                                        <option value="{{ $value }}" @selected($student->religion === $value)>{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit" class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg bg-primary-600 text-white text-[10px] font-extrabold hover:bg-primary-700 transition-colors">Simpan</button>
+                                <button type="button" onclick="toggleReligionEdit({{ $student->id }})" class="inline-flex items-center justify-center px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 text-[10px] font-extrabold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Batal</button>
+                            </form>
+                        </td>
+                        <td data-label="Jenis Ibadah" class="py-3.5 px-4">
+                            <span class="px-2.5 py-1 rounded-full {{ $student->worship_type === 'muslim' ? 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300' : 'bg-slate-200 dark:bg-slate-600/60 text-slate-600 dark:text-slate-300' }} font-bold text-[11px]">
+                                {{ $student->worship_type === 'muslim' ? 'Muslim' : 'Non-Muslim' }}
+                            </span>
+                        </td>
                         <td data-label="Email" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ $student->email ?: '—' }}</td>
                         <td data-label="Terdaftar" class="py-3.5 px-4 text-slate-500 dark:text-slate-400">{{ optional($student->created_at)->translatedFormat('d M Y, H:i') }}</td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang terdaftar pada kelas ini.</td>
+                        <td colspan="8" class="p-8 text-center text-slate-400 dark:text-slate-500">Belum ada siswa yang sesuai dengan filter.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    @if($students->hasPages())
+        <div class="p-4 border-t border-slate-100 dark:border-slate-700">
+            {{ $students->links() }}
+        </div>
+    @endif
 </section>
 @else
 <div class="admin-recap-grid grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -362,6 +414,7 @@
     if (!bulkKelas || !btnToggleBulk || !panelBulk) return;
 
     let previewData = [];
+    const religionLabels = @json(\App\Models\User::RELIGIONS);
 
     function iconSvg(paths) {
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" aria-hidden="true">${paths}</svg>`;
@@ -383,6 +436,11 @@
             <td class="py-2.5 px-4"><input type="text" name="name" value="${escapeHtml(data.name || '')}" placeholder="Nama lengkap siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
             <td class="py-2.5 px-4"><input type="text" name="nis" value="${escapeHtml(data.nis || '')}" placeholder="Nomor Induk Siswa" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
             <td class="py-2.5 px-4"><input type="text" name="password" value="${escapeHtml(data.password || '')}" placeholder="Minimal 6 karakter" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-primary-500"></td>
+            <td class="py-2.5 px-4">
+                <select name="religion" class="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/60 dark:text-slate-100 border border-slate-200 dark:border-slate-600 text-xs font-bold focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    ${Object.entries(religionLabels).map(([value, label]) => `<option value="${value}" ${(data.religion || 'islam') === value ? 'selected' : ''}>${label}</option>`).join('')}
+                </select>
+            </td>
             <td class="py-2.5 px-4 text-center">
                 <button type="button" class="btn-del-row inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/15 transition-colors" title="Hapus baris">${iconSvg('<path d="M18 6 6 18" /><path d="m6 6 12 12" />')}</button>
             </td>`;
@@ -397,10 +455,12 @@
     function collectBulkRows() {
         return Array.from(bulkRows.querySelectorAll('tr[data-row]')).map(tr => {
             const inputs = tr.querySelectorAll('input');
+            const religionSelect = tr.querySelector('select[name="religion"]');
             return {
                 name: inputs[0].value.trim(),
                 nis: inputs[1].value.trim(),
                 password: inputs[2].value,
+                religion: religionSelect ? religionSelect.value : 'islam',
             };
         });
     }
@@ -510,11 +570,13 @@
             const reason = row.errors && row.errors.length
                 ? `<div class="text-[10px] text-rose-500 dark:text-rose-400 mt-1">${escapeHtml(row.errors.join(' • '))}</div>`
                 : '';
+            const religionBadge = `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300 font-bold text-[10px]">${escapeHtml(religionLabels[row.religion] || row.religion || 'Belum ditentukan')}</span>`;
             tr.innerHTML = `
                 <td class="py-3 px-4 font-bold text-slate-400 dark:text-slate-500">${index + 1}</td>
                 <td class="py-3 px-4 font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.name) || '—'}</td>
                 <td class="py-3 px-4 font-mono font-bold text-slate-800 dark:text-slate-200">${escapeHtml(row.nis) || '—'}</td>
                 <td class="py-3 px-4 text-slate-500 dark:text-slate-400">${row.password ? '••••••' : '—'}</td>
+                <td class="py-3 px-4">${religionBadge}</td>
                 <td class="py-3 px-4">${chip}${reason}</td>`;
             previewRows.appendChild(tr);
         });
@@ -528,6 +590,7 @@
             name: row.name,
             nis: row.nis,
             password: row.password,
+            religion: row.religion || 'islam',
         }));
 
         if (!kelas) {
@@ -608,5 +671,14 @@
         }[char]));
     }
 })();
+
+function toggleReligionEdit(id) {
+    const display = document.getElementById('religion-display-' + id);
+    const edit = document.getElementById('religion-edit-' + id);
+    if (display && edit) {
+        display.classList.toggle('hidden');
+        edit.classList.toggle('hidden');
+    }
+}
 </script>
 @endpush

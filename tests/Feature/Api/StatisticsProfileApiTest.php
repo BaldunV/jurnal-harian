@@ -84,6 +84,7 @@ class StatisticsProfileApiTest extends TestCase
         $this->getJson('/api/me/profile')
             ->assertOk()
             ->assertJsonPath('data.nis', 'PROFILE-001')
+            ->assertJsonMissingPath('data.religion')
             ->assertJsonMissingPath('data.password')
             ->assertJsonMissingPath('data.profile_photo');
 
@@ -104,7 +105,14 @@ class StatisticsProfileApiTest extends TestCase
             'worship_type' => 'non_muslim',
         ])->assertOk()
             ->assertJsonPath('data.name', 'Nama Baru')
-            ->assertJsonPath('data.worship_type', 'non_muslim');
+            ->assertJsonPath('data.worship_type', 'muslim');
+
+        $this->putJson('/api/me/profile', [
+            'name' => 'Nama Baru',
+            'worship_type' => 'muslim',
+            'religion' => 'hindu',
+        ])->assertUnprocessable()
+            ->assertJsonPath('code', 'validation_error');
     }
 
     public function test_password_change_requires_the_current_password_and_revokes_all_credentials(): void

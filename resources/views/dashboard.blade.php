@@ -850,72 +850,8 @@
     </div>
 </div>
 
-<!-- Riwayat Pengisian 7 Hari Terakhir -->
-<div class="student-insight-card bg-white dark:bg-slate-800/80 dark:border-slate-700 rounded-3xl p-6 shadow-sm border border-slate-200/80">
-    <div class="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-slate-700 pb-3">
-        <div>
-            <h3 class="font-extrabold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
-                @include('partials.icon', ['name' => 'history', 'class' => 'w-4 h-4 text-emerald-500'])
-                <span>Riwayat Pengisian Kebiasaan Selesai</span>
-            </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Daftar pencapaian jurnal harian Anda selama 7 hari terakhir.</p>
-        </div>
-        <a href="{{ route('history') }}" wire:navigate class="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1">
-            <span>Lihat Kalender</span>
-            @include('partials.icon', ['name' => 'arrow-right', 'class' => 'w-3 h-3'])
-        </a>
-    </div>
-
-    <div class="space-y-3">
-        @forelse($recentJournals as $rj)
-            @php
-                $formattedDate = \Carbon\Carbon::parse($rj->date)->translatedFormat('l, d F Y');
-                $isTodayItem = ($rj->date->toDateString() === $today->toDateString());
-            @endphp
-            <div class="p-4 rounded-2xl border flex items-center justify-between gap-4 transition-all {{ $rj->is_fully_completed ? 'bg-emerald-50/60 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30' : ($rj->completed_count > 0 ? 'bg-amber-50/60 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/30' : 'bg-slate-50 border-slate-200/60 dark:bg-slate-700/40 dark:border-slate-600/60') }}">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-xs {{ $rj->is_fully_completed ? 'bg-emerald-500 text-white' : ($rj->completed_count > 0 ? 'bg-amber-400 text-amber-950' : 'bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400') }}">
-                        @if($rj->is_fully_completed)
-                            @include('partials.icon', ['name' => 'circle-check', 'class' => 'w-5 h-5'])
-                        @elseif($rj->completed_count > 0)
-                            @include('partials.icon', ['name' => 'clock-3', 'class' => 'w-5 h-5'])
-                        @else
-                            @include('partials.icon', ['name' => 'circle-x', 'class' => 'w-5 h-5'])
-                        @endif
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h4 class="font-bold text-xs text-slate-900 dark:text-white">{{ $formattedDate }}</h4>
-                            @if($isTodayItem)
-                                <span class="text-[9px] font-extrabold bg-emerald-600 text-white px-2 py-0.5 rounded-full uppercase">Hari Ini</span>
-                            @endif
-                        </div>
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                            Status: <span class="font-extrabold {{ $rj->is_fully_completed ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300' }}">{{ $rj->completed_count }}/7 Kebiasaan Terisi</span>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="text-xs hidden sm:inline-flex items-center gap-1.5">
-                        @if($rj->bangun_pagi)@include('partials.icon', ['name' => 'sunrise', 'class' => 'w-4 h-4 text-amber-500'])@endif
-                        @if($rj->beribadah)@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-4 h-4 text-emerald-500'])@endif
-                        @if($rj->berolahraga)@include('partials.icon', ['name' => 'footprints', 'class' => 'w-4 h-4 text-teal-500'])@endif
-                        @if($rj->makan_sehat)@include('partials.icon', ['name' => 'salad', 'class' => 'w-4 h-4 text-teal-500'])@endif
-                        @if($rj->gemar_belajar)@include('partials.icon', ['name' => 'book-open', 'class' => 'w-4 h-4 text-emerald-500'])@endif
-                        @if($rj->bermasyarakat)@include('partials.icon', ['name' => 'handshake', 'class' => 'w-4 h-4 text-teal-500'])@endif
-                        @if($rj->tidur_cepat)@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-4 h-4 text-emerald-500'])@endif
-                    </span>
-                    <button type="button" onclick="showDateDetail('{{ $rj->date->toDateString() }}')" class="btn-detail-slide">
-                        <span>Rincian</span>
-                    </button>
-                </div>
-            </div>
-        @empty
-            <div class="text-center py-6 text-slate-400 dark:text-slate-500 text-xs">Belum ada riwayat pengisian.</div>
-        @endforelse
-    </div>
-</div>
+<!-- Riwayat Pengisian 7 Hari Terakhir (Livewire, listen journal-updated) -->
+<livewire:history-list />
 
 </div>
 
@@ -1263,15 +1199,55 @@
 
             titleElem.innerText = "Jurnal " + data.formatted_date;
             const j = data.journal;
+            const qualified = data.qualified_habits || {};
 
             const habitList = [
-                { name: 'Bangun Pagi', status: j.bangun_pagi, icon: '@include('partials.icon', ['name' => 'sunrise', 'class' => 'w-6 h-6'])', note: j.bangun_pagi_time ? 'Jam bangun: ' + j.bangun_pagi_time.slice(0, 5) : null },
-                { name: 'Beribadah', status: j.beribadah, icon: '@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-6 h-6'])', note: formatPrayerDetails(j.ibadah_details) },
-                { name: 'Berolahraga', status: j.berolahraga, icon: '@include('partials.icon', ['name' => 'footprints', 'class' => 'w-6 h-6'])', note: j.olahraga_note, photo: j.olahraga_photo_url },
-                { name: 'Makan Sehat', status: j.makan_sehat, icon: '@include('partials.icon', ['name' => 'salad', 'class' => 'w-6 h-6'])', note: j.makan_note, photo: j.makan_photo_url },
-                { name: 'Gemar Belajar', status: j.gemar_belajar, icon: '@include('partials.icon', ['name' => 'book-open', 'class' => 'w-6 h-6'])', note: j.belajar_note, photo: j.belajar_photo_url },
-                { name: 'Bermasyarakat', status: j.bermasyarakat, icon: '@include('partials.icon', ['name' => 'handshake', 'class' => 'w-6 h-6'])', note: j.masyarakat_note, photo: j.masyarakat_photo_url },
-                { name: 'Tidur Cepat', status: j.tidur_cepat, icon: '@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-6 h-6'])', note: j.tidur_note },
+                { 
+                    name: 'Bangun Pagi', 
+                    status: qualified.bangun_pagi ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'sunrise', 'class' => 'w-6 h-6'])', 
+                    note: j.bangun_pagi_time ? 'Jam bangun: ' + j.bangun_pagi_time.slice(0, 5) : null 
+                },
+                { 
+                    name: 'Beribadah', 
+                    status: qualified.beribadah ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'hand-heart', 'class' => 'w-6 h-6'])', 
+                    note: formatPrayerDetails(j.ibadah_details) 
+                },
+                { 
+                    name: 'Berolahraga', 
+                    status: qualified.berolahraga ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'footprints', 'class' => 'w-6 h-6'])', 
+                    note: j.olahraga_note, 
+                    photo: j.olahraga_photo_url 
+                },
+                { 
+                    name: 'Makan Sehat', 
+                    status: qualified.makan_sehat ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'salad', 'class' => 'w-6 h-6'])', 
+                    note: j.makan_note, 
+                    photo: j.makan_photo_url 
+                },
+                { 
+                    name: 'Gemar Belajar', 
+                    status: qualified.gemar_belajar ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'book-open', 'class' => 'w-6 h-6'])', 
+                    note: j.belajar_note, 
+                    photo: j.belajar_photo_url 
+                },
+                { 
+                    name: 'Bermasyarakat', 
+                    status: qualified.bermasyarakat ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'handshake', 'class' => 'w-6 h-6'])', 
+                    note: j.masyarakat_note, 
+                    photo: j.masyarakat_photo_url 
+                },
+                { 
+                    name: 'Tidur Cepat', 
+                    status: qualified.tidur_cepat ?? false, 
+                    icon: '@include('partials.icon', ['name' => 'moon-star', 'class' => 'w-6 h-6'])', 
+                    note: j.tidur_note 
+                },
             ];
 
             let html = '';
@@ -1311,7 +1287,16 @@
             if (details.isya) list.push('Isya');
             return 'Sholat terisi: ' + (list.length > 0 ? list.join(', ') : 'Belum ada');
         }
-        return null;
+        // Non-Muslim format
+        const labels = {
+            prayer: 'Berdoa',
+            scripture: 'Membaca kitab suci',
+            worship: 'Mengikuti ibadah',
+            spiritual_activity: 'Kegiatan rohani',
+            other: 'Lainnya'
+        };
+        const list = Object.entries(details).filter(([_, v]) => v).map(([k]) => labels[k] || k);
+        return list.length > 0 ? 'Kegiatan: ' + list.join(', ') : 'Belum ada kegiatan';
     }
 
     function toggleModal(id) {
@@ -1384,6 +1369,8 @@
     }
 
     function updatePrayerLogic() {
+        // Check if user is Muslim (has subuh checkbox) or Non-Muslim (has prayer checkbox)
+        const isMuslim = document.querySelector('input[name="ibadah_subuh"]') !== null;
         const checkboxes = document.querySelectorAll('.prayer-checkbox');
         let allChecked = true;
         let count = 0;
@@ -1396,15 +1383,23 @@
             }
         });
 
-        const progressText = document.getElementById('sholat-progress-text');
+        const progressText = document.getElementById('sholat-progress-text') || document.getElementById('ibadah-progress-text');
         if (progressText) {
-            progressText.innerText = count + '/' + checkboxes.length + ' Sholat';
+            if (isMuslim) {
+                progressText.innerText = count + '/' + checkboxes.length + ' Sholat';
+            } else {
+                progressText.innerText = count + ' dipilih';
+            }
         }
 
         const masterIcon = document.getElementById('master-ibadah-icon');
         const statusBadge = document.getElementById('ibadah-status-badge');
 
-        if (allChecked) {
+        // For non-Muslim: beribadah = true if ANY checkbox is checked (count > 0)
+        // For Muslim: beribadah = true if ALL 5 are checked (allChecked)
+        const isComplete = isMuslim ? allChecked : count > 0;
+
+        if (isComplete) {
             masterIcon.classList.remove('bg-slate-200', 'text-slate-400', 'dark:bg-slate-600');
             masterIcon.classList.add('bg-emerald-500', 'text-white');
             if (statusBadge) {

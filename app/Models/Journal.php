@@ -17,6 +17,7 @@ class Journal extends Model
         'bangun_pagi_time',
         'beribadah',
         'ibadah_details',
+        'ibadah_note',
         'berolahraga',
         'olahraga_note',
         'olahraga_photo',

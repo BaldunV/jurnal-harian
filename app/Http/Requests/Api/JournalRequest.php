@@ -32,12 +32,13 @@ class JournalRequest extends FormRequest
         $muslim = $this->user()?->worship_type === 'muslim';
         $detailKeys = $muslim
             ? ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']
-            : ['doa_pagi', 'kitab_meditasi', 'doa_malam'];
+            : ['prayer', 'scripture', 'worship', 'spiritual_activity', 'other'];
 
         $rules = [
             'bangun_pagi' => ['required', 'boolean'],
             'bangun_pagi_time' => ['nullable', 'required_if:bangun_pagi,true', 'date_format:H:i'],
             'ibadah_details' => ['required', 'array:'.implode(',', $detailKeys)],
+            'ibadah_note' => ['nullable', 'string', 'max:500'],
             'berolahraga' => ['required', 'boolean'],
             'olahraga_note' => ['nullable', 'string', 'max:255'],
             'makan_sehat' => ['required', 'boolean'],

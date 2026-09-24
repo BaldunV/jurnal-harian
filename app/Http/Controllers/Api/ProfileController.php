@@ -27,7 +27,9 @@ class ProfileController extends ApiController
 
     public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $request->user()->update($request->validated());
+        $request->user()->update([
+            'name' => $request->validated('name'),
+        ]);
 
         return $this->success(
             new StudentResource($request->user()->refresh()),

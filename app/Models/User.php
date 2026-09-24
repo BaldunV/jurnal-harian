@@ -12,6 +12,15 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const RELIGIONS = [
+        'islam' => 'Islam',
+        'kristen' => 'Kristen Protestan',
+        'katolik' => 'Katolik',
+        'hindu' => 'Hindu',
+        'buddha' => 'Buddha',
+        'konghucu' => 'Konghucu',
+    ];
+
     protected $fillable = [
         'nis',
         'name',
@@ -20,6 +29,7 @@ class User extends Authenticatable
         'role',
         'kelas',
         'worship_type',
+        'religion',
     ];
 
     protected $hidden = [
@@ -33,6 +43,25 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        static::saving(function (User $user): void {
+            if ($user->religion !== null) {
+                $user->worship_type = static::worshipTypeForReligion($user->religion);
+            }
+        });
+    }
+
+    public static function worshipTypeForReligion(string $religion): string
+    {
+        return $religion === 'islam' ? 'muslim' : 'non_muslim';
+    }
+
+    public function getReligionLabelAttribute(): string
+    {
+        return static::RELIGIONS[$this->religion] ?? 'Belum ditentukan';
     }
 
     public function journals()

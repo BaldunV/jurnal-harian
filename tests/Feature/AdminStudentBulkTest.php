@@ -170,6 +170,70 @@ class AdminStudentBulkTest extends TestCase
         $response->assertOk()
             ->assertHeader('Content-Type', 'text/csv; charset=UTF-8')
             ->assertHeader('Content-Disposition', 'attachment; filename="template-siswa.csv"')
-            ->assertSee('Nama Siswa,NIS,Password');
+            ->assertSee('Nama Siswa,NIS,Password,Agama');
+    }
+
+    public function test_template_download_returns_xlsx(): void
+    {
+        $response = $this->actingAs($this->admin())->get('/admin/students/template?format=xlsx');
+
+        $response->assertOk()
+            ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('template-siswa.xlsx', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    public function test_import_preview_validates_religion(): void
+    {
+        $csv = "Nama Siswa,NIS,Password,Agama\nAndi,6001,password123,islam\nBudi,6002,password123,Kristen Protestan\nCitra,6003,password123,invalid\n";
+
+        $response = $this->actingAs($this->admin())->post('/admin/students/import/preview', [
+            'file' => UploadedFile::fake()->createWithContent('siswa.csv', $csv),
+        ]);
+
+        $response->assertOk()->assertJsonCount(3, 'rows');
+
+        $rows = $response->json('rows');
+        $this->assertTrue($rows[0]['valid']);
+        $this->assertEquals('islam', $rows[0]['religion']);
+
+        $this->assertTrue($rows[1]['valid']);
+        $this->assertEquals('kristen', $rows[1]['religion']);
+
+        $this->assertFalse($rows[2]['valid']);
+        $this->assertStringContainsString('Agama tidak valid', $rows[2]['errors'][0]);
+    }
+
+    public function test_import_store_derives_worship_type_from_religion(): void
+    {
+        $response = $this->actingAs($this->admin())->postJson('/admin/students/import/store', [
+            'kelas' => 'XII ACP',
+            'rows' => [
+                ['name' => 'Fulan Muslim', 'nis' => '7001', 'password' => 'password123', 'religion' => 'islam'],
+                ['name' => 'Fulan Hindu', 'nis' => '7002', 'password' => 'password123', 'religion' => 'hindu'],
+            ],
+        ]);
+
+        $response->assertOk()->assertJsonPath('success', 2);
+
+        $this->assertDatabaseHas('users', ['nis' => '7001', 'religion' => 'islam', 'worship_type' => 'muslim']);
+        $this->assertDatabaseHas('users', ['nis' => '7002', 'religion' => 'hindu', 'worship_type' => 'non_muslim']);
+    }
+
+    public function test_legacy_non_muslim_row_without_specific_religion_is_rejected(): void
+    {
+        $response = $this->actingAs($this->admin())->postJson('/admin/students/bulk', [
+            'kelas' => 'X PPLG',
+            'rows' => [[
+                'name' => 'Agama Belum Jelas',
+                'nis' => '8001',
+                'password' => 'password123',
+                'worship_type' => 'non_muslim',
+            ]],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', 0)
+            ->assertJsonCount(1, 'failed');
+        $this->assertDatabaseMissing('users', ['nis' => '8001']);
     }
 }

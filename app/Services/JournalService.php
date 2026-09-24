@@ -100,11 +100,17 @@ class JournalService
     ): Journal {
         $details = $this->worshipDetails($user, $data['ibadah_details']);
 
+        $isMuslim = $user->worship_type === 'muslim';
+        $beribadah = $isMuslim
+            ? ! in_array(false, $details, true)
+            : collect($details)->filter()->count() > 0;
+
         $journal->forceFill([
             'bangun_pagi' => $data['bangun_pagi'],
             'bangun_pagi_time' => $data['bangun_pagi'] ? $data['bangun_pagi_time'] : null,
             'ibadah_details' => $details,
-            'beribadah' => ! in_array(false, $details, true),
+            'ibadah_note' => $data['ibadah_note'] ?? null,
+            'beribadah' => $beribadah,
             'berolahraga' => $data['berolahraga'],
             'olahraga_note' => $this->nullableString($data['olahraga_note'] ?? null),
             'makan_sehat' => $data['makan_sehat'],
@@ -131,10 +137,10 @@ class JournalService
     {
         $keys = $user->worship_type === 'muslim'
             ? ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya']
-            : ['doa_pagi', 'kitab_meditasi', 'doa_malam'];
+            : ['prayer', 'scripture', 'worship', 'spiritual_activity', 'other'];
 
         return collect($keys)
-            ->mapWithKeys(fn (string $key): array => [$key => (bool) $details[$key]])
+            ->mapWithKeys(fn (string $key): array => [$key => (bool) ($details[$key] ?? false)])
             ->all();
     }
 

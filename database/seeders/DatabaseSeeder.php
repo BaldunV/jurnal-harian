@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'budi@sekolah.sch.id',
             'role' => 'siswa',
             'kelas' => 'XII RPL 1',
+            'religion' => 'islam',
             'worship_type' => 'muslim',
             'password' => Hash::make('password123'),
         ]);
@@ -44,6 +45,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'siti@sekolah.sch.id',
             'role' => 'siswa',
             'kelas' => 'XII RPL 1',
+            'religion' => 'islam',
             'worship_type' => 'muslim',
             'password' => Hash::make('password123'),
         ]);
@@ -55,6 +57,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'daniel@sekolah.sch.id',
             'role' => 'siswa',
             'kelas' => 'XII RPL 1',
+            'religion' => 'kristen',
             'worship_type' => 'non_muslim',
             'password' => Hash::make('password123'),
         ]);

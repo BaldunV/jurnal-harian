@@ -30,7 +30,7 @@ class JournalController extends Controller
                 'beribadah' => false,
                 'ibadah_details' => $user->worship_type === 'muslim'
                     ? ['subuh' => false, 'dzuhur' => false, 'ashar' => false, 'maghrib' => false, 'isya' => false]
-                    : ['doa_pagi' => false, 'kitab_meditasi' => false, 'doa_malam' => false],
+                    : ['prayer' => false, 'scripture' => false, 'worship' => false, 'spiritual_activity' => false, 'other' => false],
                 'berolahraga' => false,
                 'makan_sehat' => false,
                 'gemar_belajar' => false,
@@ -121,17 +121,17 @@ class JournalController extends Controller
             // Master beribadah is true ONLY if all 5 prayers are checked
             $journal->beribadah = ($subuh && $dzuhur && $ashar && $maghrib && $isya);
         } else {
-            $doaPagi = $request->boolean('ibadah_doa_pagi');
-            $kitab = $request->boolean('ibadah_kitab');
-            $doaMalam = $request->boolean('ibadah_doa_malam');
-
-            $journal->ibadah_details = [
-                'doa_pagi' => $doaPagi,
-                'kitab_meditasi' => $kitab,
-                'doa_malam' => $doaMalam,
+            $details = [
+                'prayer' => $request->boolean('ibadah_prayer'),
+                'scripture' => $request->boolean('ibadah_scripture'),
+                'worship' => $request->boolean('ibadah_worship'),
+                'spiritual_activity' => $request->boolean('ibadah_spiritual_activity'),
+                'other' => $request->boolean('ibadah_other'),
             ];
 
-            $journal->beribadah = ($doaPagi && $kitab && $doaMalam);
+            $journal->ibadah_details = $details;
+            $journal->beribadah = collect($details)->filter()->count() > 0;
+            $journal->ibadah_note = $request->input('ibadah_note');
         }
 
         $journal->recalculateProgress();
@@ -192,9 +192,15 @@ class JournalController extends Controller
             ]);
         }
 
+        $qualified = $journal->qualifiedHabits();
+        $qualifiedCount = count(array_filter($qualified));
+
         return response()->json([
             'found' => true,
             'journal' => $journal,
+            'qualified_habits' => $qualified,
+            'qualified_count' => $qualifiedCount,
+            'is_fully_qualified' => $qualifiedCount === 7,
             'formatted_date' => Carbon::parse($date)->translatedFormat('l, d F Y'),
         ]);
     }
@@ -278,15 +284,7 @@ class JournalController extends Controller
 
     public function updateProfile(Request $request)
     {
-        $user = Auth::user();
-
-        $validated = $request->validate([
-            'worship_type' => ['required', 'in:muslim,non_muslim'],
-        ]);
-
-        $user->update($validated);
-
-        return redirect()->back()->with('success', 'Profil berhasil diperbarui!');
+        abort(403, 'Agama dan jenis ibadah hanya dapat diubah oleh admin.');
     }
 
     public function updatePassword(Request $request)

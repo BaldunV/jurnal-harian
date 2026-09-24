@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class AdminStudentController extends Controller
 {
@@ -85,14 +88,50 @@ class AdminStudentController extends Controller
         return response()->json($this->storeStudents($kelas, $rows));
     }
 
-    public function downloadTemplate()
+    public function updateReligion(Request $request, User $user)
     {
+        if ($user->role !== 'siswa') {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'religion' => ['required', Rule::in(array_keys(User::RELIGIONS))],
+        ]);
+
+        $religion = $validated['religion'];
+        $user->update([
+            'religion' => $religion,
+            'worship_type' => User::worshipTypeForReligion($religion),
+        ]);
+
+        return back()->with('success', "Agama {$user->name} berhasil diubah menjadi {$user->religion_label}.");
+    }
+
+    public function downloadTemplate(Request $request)
+    {
+        if ($request->query('format') === 'xlsx') {
+            $spreadsheet = new Spreadsheet;
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Template Siswa');
+            $sheet->fromArray([
+                ['Nama Siswa', 'NIS', 'Password', 'Agama'],
+            ]);
+
+            $writer = new Xlsx($spreadsheet);
+
+            return response()->streamDownload(function () use ($writer) {
+                $writer->save('php://output');
+            }, 'template-siswa.xlsx', [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]);
+        }
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="template-siswa.csv"',
         ];
 
-        $content = "\xEF\xBB\xBF"."Nama Siswa,NIS,Password\r\n";
+        $content = "\xEF\xBB\xBF"."Nama Siswa,NIS,Password,Agama\r\n";
 
         return response($content, 200, $headers);
     }
@@ -117,12 +156,15 @@ class AdminStudentController extends Controller
                 continue;
             }
 
+            $religion = $row['religion'];
+
             User::create([
                 'nis' => $row['nis'],
                 'name' => $row['name'],
                 'kelas' => $kelas,
                 'role' => 'siswa',
-                'worship_type' => 'muslim',
+                'religion' => $religion,
+                'worship_type' => User::worshipTypeForReligion($religion),
                 'password' => $row['password'],
             ]);
 
@@ -158,6 +200,7 @@ class AdminStudentController extends Controller
             $name = trim((string) ($cells[0] ?? ''));
             $nis = trim((string) ($cells[1] ?? ''));
             $password = trim((string) ($cells[2] ?? ''));
+            $religion = trim((string) ($cells[3] ?? ''));
 
             if (! $seenHeader && strtolower($name) === 'nama siswa') {
                 $seenHeader = true;
@@ -166,7 +209,7 @@ class AdminStudentController extends Controller
             }
             $seenHeader = true;
 
-            if ($name === '' && $nis === '' && $password === '') {
+            if ($name === '' && $nis === '' && $password === '' && $religion === '') {
                 continue;
             }
 
@@ -174,6 +217,7 @@ class AdminStudentController extends Controller
                 'name' => $name,
                 'nis' => $nis,
                 'password' => $password,
+                'religion' => $religion,
             ];
         }
 
@@ -182,10 +226,28 @@ class AdminStudentController extends Controller
 
     private function normalizeRow(mixed $row): array
     {
+        $rawReligion = strtolower(trim((string) ($row['religion'] ?? '')));
+        $legacyWorshipType = strtolower(trim((string) ($row['worship_type'] ?? '')));
+
+        if ($rawReligion === '' && in_array($legacyWorshipType, ['non_muslim', 'non-muslim', 'non muslim'], true)) {
+            $rawReligion = 'belum ditentukan';
+        }
+
+        $religion = match ($rawReligion) {
+            '', 'islam', 'muslim' => 'islam',
+            'kristen', 'kristen protestan', 'protestan' => 'kristen',
+            'katolik' => 'katolik',
+            'hindu' => 'hindu',
+            'buddha', 'budha' => 'buddha',
+            'konghucu', 'khonghucu' => 'konghucu',
+            default => $rawReligion,
+        };
+
         return [
             'name' => trim((string) ($row['name'] ?? '')),
             'nis' => trim((string) ($row['nis'] ?? '')),
             'password' => (string) ($row['password'] ?? ''),
+            'religion' => $religion,
         ];
     }
 
@@ -213,6 +275,10 @@ class AdminStudentController extends Controller
             $errors[] = 'Password kosong';
         } elseif (strlen($row['password']) < 6) {
             $errors[] = 'Password minimal 6 karakter';
+        }
+
+        if (! array_key_exists($row['religion'], User::RELIGIONS)) {
+            $errors[] = 'Agama tidak valid';
         }
 
         if ($kelas !== null && ! in_array($kelas, self::KELAS_LIST, true)) {

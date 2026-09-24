@@ -178,25 +178,25 @@
                     </div>
                 </div>
             @else
-                <!-- Breakdown Non-Muslim -->
+                <!-- Breakdown Non-Muslim (Multi-checkbox, hanya informatif - beribadah=true jika ada yang dipilih) -->
                 @php
-                    $details = $journal->ibadah_details ?? ['doa_pagi'=>false,'kitab_meditasi'=>false,'doa_malam'=>false];
+                    $details = $journal->ibadah_details ?? ['prayer'=>false,'scripture'=>false,'worship'=>false,'spiritual_activity'=>false,'other'=>false];
                     $prayersCount = collect($details)->filter()->count();
                 @endphp
                 <div class="bg-slate-50 dark:bg-slate-900/40 rounded-xl p-4 border border-slate-200/60 dark:border-slate-700 mt-2">
-                    <div class="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
-                        <span>Checklist Ibadah Rutin Harian:</span>
-                        <span class="text-emerald-600 dark:text-emerald-400" id="sholat-progress-text">{{ $prayersCount }}/3 Selesai</span>
+                    <div class="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">
+                        <span>Jenis kegiatan ibadah (pilih yang dilakukan):</span>
+                        <span class="text-emerald-600 dark:text-emerald-400" id="ibadah-progress-text">{{ $prayersCount }} dipilih</span>
                     </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        @foreach(['doa_pagi' => ['Doa Pagi / Saat Teduh', 'sunrise'], 'kitab_meditasi' => ['Membaca Kitab / Meditasi', 'book-open'], 'doa_malam' => ['Doa Malam', 'moon-star']] as $key => [$label, $icon])
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        @foreach(['prayer' => ['Berdoa', 'hand-heart'], 'scripture' => ['Membaca / mempelajari kitab suci', 'book-open'], 'worship' => ['Mengikuti ibadah', 'users'], 'spiritual_activity' => ['Kegiatan rohani lainnya', 'sparkles'], 'other' => ['Lainnya', 'plus-circle']] as $key => [$label, $icon])
                             <label class="flex items-center gap-2.5 p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-200 cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500/50 transition-all shadow-xs group">
                                 <div class="neon-checkbox shrink-0">
                                     <input
                                         type="checkbox"
                                         name="ibadah_{{ $key }}"
                                         value="1"
-                                        onchange="updatePrayerLogic()"
+                                        onchange="playSholatSound(this); updatePrayerLogic()"
                                         class="prayer-checkbox"
                                         title="Tandai {{ $label }}"
                                         {{ !empty($details[$key]) ? 'checked' : '' }}
@@ -214,6 +214,7 @@
                                         </div>
                                         <div class="neon-checkbox__effects">
                                             <div class="neon-checkbox__particles">
+                                                <span></span><span></span><span></span><span></span>
                                                 <span></span><span></span><span></span><span></span>
                                                 <span></span><span></span><span></span><span></span>
                                             </div>
@@ -234,6 +235,14 @@
                                 </span>
                             </label>
                         @endforeach
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700">
+                        <label for="ibadah_note" class="block text-[11px] font-bold text-slate-600 dark:text-slate-300 mb-1.5">
+                            Catatan (opsional)
+                        </label>
+                        <textarea id="ibadah_note" name="ibadah_note" rows="2" onblur="autoSaveJournal()"
+                            placeholder="Contoh: Doa pagi dan membaca kitab suci"
+                            class="w-full px-3 py-2 bg-white dark:bg-slate-800/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none">{{ $journal->ibadah_note ?? '' }}</textarea>
                     </div>
                 </div>
             @endif

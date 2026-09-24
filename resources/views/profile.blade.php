@@ -37,9 +37,7 @@
             <span>Informasi Data Diri</span>
         </h3>
 
-        <form action="{{ route('profile.update') }}" method="POST" class="space-y-4">
-            @csrf
-
+        <div class="space-y-4">
             <div>
                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">NIS (Nomor Induk Siswa)</label>
                 <input type="text" value="{{ $user->nis }}" disabled
@@ -48,18 +46,20 @@
             </div>
 
             <div>
-                <label for="worship_type" class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Preferensi Jenis Ibadah</label>
-                <select id="worship_type" name="worship_type" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700/60 dark:border-slate-600 dark:text-slate-100 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                    <option value="muslim" {{ $user->worship_type == 'muslim' ? 'selected' : '' }}>Muslim (5 Sholat Wajib)</option>
-                    <option value="non_muslim" {{ $user->worship_type == 'non_muslim' ? 'selected' : '' }}>Non-Muslim (Doa Pagi / Kitab / Meditasi)</option>
-                </select>
-                <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block">Penyesuaian checklist kartu "Beribadah" pada dashboard.</span>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Agama</label>
+                <div class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300">
+                    {{ $user->religion_label }}
+                </div>
             </div>
 
-            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-md transition-all">
-                Simpan Perubahan Profil
-            </button>
-        </form>
+            <div>
+                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">Jenis Ibadah</label>
+                <div class="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300">
+                    {{ $user->worship_type === 'muslim' ? 'Muslim' : 'Non-Muslim' }}
+                </div>
+                <span class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 block">Perubahan agama dan jenis ibadah dilakukan oleh admin sekolah.</span>
+            </div>
+        </div>
     </div>
 
     <!-- Card 2: Ganti Password -->

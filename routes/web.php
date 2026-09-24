@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/students/import/preview', [AdminStudentController::class, 'importPreview'])->name('admin.students.import.preview');
         Route::post('/admin/students/import/store', [AdminStudentController::class, 'importStore'])->name('admin.students.import.store');
         Route::get('/admin/students/template', [AdminStudentController::class, 'downloadTemplate'])->name('admin.students.template');
+        Route::put('/admin/students/{user}', [AdminStudentController::class, 'updateReligion'])->name('admin.students.update_religion');
     });
 
     Route::middleware('role:admin,guru')->group(function () {

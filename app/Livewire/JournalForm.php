@@ -199,6 +199,7 @@ class JournalForm extends Component
         $journal->masyarakat_note = $data['masyarakat_note'] ?? null;
         $journal->tidur_cepat = ! empty($data['tidur_cepat']);
         $journal->tidur_note = $data['tidur_note'] ?? null;
+        $journal->ibadah_note = $data['ibadah_note'] ?? null;
 
         // Processing Ibadah
         if ($user->worship_type === 'muslim') {
@@ -213,20 +214,25 @@ class JournalForm extends Component
             $journal->ibadah_details = $prayers;
             $journal->beribadah = ($prayers['subuh'] && $prayers['dzuhur'] && $prayers['ashar'] && $prayers['maghrib'] && $prayers['isya']);
         } else {
-            $prayers = [
-                'doa_pagi' => ! empty($data['ibadah_doa_pagi']),
-                'kitab_meditasi' => ! empty($data['ibadah_kitab']),
-                'doa_malam' => ! empty($data['ibadah_doa_malam']),
+            $details = [
+                'prayer' => ! empty($data['ibadah_prayer']),
+                'scripture' => ! empty($data['ibadah_scripture']),
+                'worship' => ! empty($data['ibadah_worship']),
+                'spiritual_activity' => ! empty($data['ibadah_spiritual_activity']),
+                'other' => ! empty($data['ibadah_other']),
             ];
 
-            $journal->ibadah_details = $prayers;
-            $journal->beribadah = ($prayers['doa_pagi'] && $prayers['kitab_meditasi'] && $prayers['doa_malam']);
+            $journal->ibadah_details = $details;
+            $journal->beribadah = collect($details)->filter()->count() > 0;
         }
 
         $journal->recalculateProgress();
         $journal->save();
 
         $this->journal = $journal;
+
+        // Beri tahu komponen lain (mis. HistoryList) agar query ulang database.
+        $this->dispatch('journal-updated');
 
         return [
             'success' => true,
